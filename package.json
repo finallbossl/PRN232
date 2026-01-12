@@ -1,0 +1,40 @@
+{
+  "name": "goride-monorepo",
+  "version": "1.0.0",
+  "description": "GoRide - Monorepo với Microservices, Gateway, và Frontend",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "server",
+    "web-user",
+    "web-manager"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run build:shared",
+    "start": "npm run start:dev",
+    "start:all": "npm run start:dev",
+    "start:dev": "npm run build:shared && concurrently -n \"GATEWAY,AUTH-SVC,WEB-USER,WEB-MGR\" -c \"blue,green,yellow,magenta\" --kill-others-on-fail \"npm run start:gateway:dev\" \"npm run start:auth-service:dev\" \"npm run start:web-user:dev\" \"npm run start:web-manager:dev\"",
+    "start:gateway": "cd server && npm run start:gateway",
+    "start:gateway:dev": "cd server && npm run start:gateway:dev",
+    "start:auth-service": "cd server && npm run start:auth-service",
+    "start:auth-service:dev": "cd server && npm run start:auth-service:dev",
+    "start:web-user": "cd web-user && npm run dev",
+    "start:web-user:dev": "cd web-user && npm run dev",
+    "start:web-manager": "cd web-manager && npm run dev",
+    "start:web-manager:dev": "cd web-manager && npm run dev",
+    "build:all": "npm run build:shared && npm run build:server && npm run build:web-user && npm run build:web-manager",
+    "build:shared": "cd shared && npm run build",
+    "watch:shared": "cd shared && npm run watch",
+    "build:server": "cd server && npm run build",
+    "build:web-user": "cd web-user && npm run build",
+    "build:web-manager": "cd web-manager && npm run build",
+    "clean": "rm -rf node_modules server/node_modules web-user/node_modules web-manager/node_modules shared/node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
