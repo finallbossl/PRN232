@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package auth;
+
+// Auth Service Definition
+service AuthService {
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc Validate (ValidateRequest) returns (ValidateResponse);
+  rpc Refresh (RefreshRequest) returns (RefreshResponse);
+}
+
+// Register Request/Response
+message RegisterRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+  string phone = 4;
+  string address = 5;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string message = 2;
+  UserData user = 3;
+  string access_token = 4;
+  string refresh_token = 5;
+}
+
+// Login Request/Response
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  UserData user = 3;
+  string access_token = 4;
+  string refresh_token = 5;
+}
+
+// Validate Request/Response (for JWT validation)
+message ValidateRequest {
+  string token = 1;
+}
+
+message ValidateResponse {
+  bool valid = 1;
+  UserData user = 2;
+  string message = 3;
+}
+
+// Refresh Token Request/Response
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message RefreshResponse {
+  bool success = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  string message = 4;
+}
+
+// User Data
+message UserData {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string phone = 4;
+  string address = 5;
+  string role = 6;
+}

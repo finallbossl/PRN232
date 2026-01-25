@@ -1,267 +1,159 @@
-# GoRide - Cấu Trúc Dự Án
+# GoRide - NestJS Monorepo Structure
 
-## 📂 Tổng Quan
+## Tổng quan
 
-Dự án GoRide được tổ chức theo kiến trúc **Monorepo** với **Microservices**, sử dụng NestJS cho backend và Next.js cho frontend.
+Dự án GoRide đã được tái cấu trúc thành một NestJS monorepo, gộp backend, web-user và web-manager thành một dự án duy nhất.
 
-## 🏗️ Kiến Trúc Tổng Thể
-
-```
-Frontend (Web User/Manager)
-    ↓
-    ↓ HTTP REST API
-    ↓
-API Gateway (Port 3000)
-    ↓
-    ↓ gRPC
-    ↓
-Microservices
-    ├── Auth Service (Port 50051)
-    ├── User Service (TODO)
-    ├── Rental Service (TODO)
-    └── ...
-    ↓
-PostgreSQL Database
-```
-
-## 📁 Cấu Trúc Thư Mục Chi Tiết
-
-### Root Level
+## Cấu trúc thư mục
 
 ```
-PRN232-CA/
-├── server/              # Backend - NestJS Monorepo
-├── shared/              # Shared package (Types, DTOs, Constants)
-├── web-user/           # Frontend cho người dùng
-├── web-manager/        # Frontend cho admin
-├── package.json        # Root package.json (workspaces)
-├── env.example         # Environment variables template
-├── README.md           # File này
-├── PROJECT_STRUCTURE.md
-└── START.md
-```
-
-### Server (Backend)
-
-```
-server/
-├── apps/                        # Applications
-│   ├── api-gateway/            # API Gateway Application
+goride/
+├── apps/
+│   ├── api-gateway/           # API Gateway (NestJS)
 │   │   ├── src/
-│   │   │   ├── main.ts         # Entry point
-│   │   │   ├── app.module.ts   # Root module
-│   │   │   ├── auth/           # Auth module
-│   │   │   │   ├── auth.controller.ts
-│   │   │   │   └── auth.module.ts
-│   │   │   └── ...
-│   │   └── tsconfig.app.json
+│   │   │   ├── main.ts
+│   │   │   ├── app.module.ts
+│   │   │   ├── app.controller.ts
+│   │   │   ├── app.service.ts
+│   │   │   └── auth/
+│   │   │       ├── auth.module.ts
+│   │   │       ├── auth.controller.ts
+│   │   │       └── auth.service.ts
+│   │   ├── tsconfig.app.json
+│   │   └── package.json
 │   │
-│   └── auth-service/           # Auth Service Application
-│       ├── src/
-│       │   ├── main.ts         # Entry point (gRPC)
-│       │   ├── app.module.ts   # Root module
-│       │   ├── auth/           # Auth module
-│       │   │   ├── auth.grpc.controller.ts
-│       │   │   ├── auth.service.ts
-│       │   │   ├── auth.module.ts
-│       │   │   └── interfaces/
-│       │   └── ...
-│       └── tsconfig.app.json
+│   ├── auth-service/          # Auth Microservice (NestJS)
+│   │   ├── src/
+│   │   │   ├── main.ts
+│   │   │   ├── app.module.ts
+│   │   │   └── auth/
+│   │   │       ├── auth.module.ts
+│   │   │       ├── auth.grpc.controller.ts
+│   │   │       └── auth.service.ts
+│   │   ├── tsconfig.app.json
+│   │   └── package.json
+│   │
+│   ├── web-user/              # Frontend User (Next.js)
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   └── web-manager/            # Frontend Manager (Next.js)
+│       ├── app/
+│       ├── package.json
+│       └── tsconfig.json
 │
-├── libs/                        # Shared Libraries
-│   ├── common/                 # Common library
-│   │   ├── src/
-│   │   │   ├── decorators/     # @Public(), @Roles()
-│   │   │   ├── guards/         # JwtAuthGuard, RolesGuard
-│   │   │   └── index.ts
-│   │   └── tsconfig.lib.json
-│   │
-│   └── prisma/                 # Prisma library
+├── libs/
+│   └── shared/                 # Shared Library
 │       ├── src/
-│       │   ├── prisma.service.ts
-│       │   ├── prisma.module.ts
+│       │   ├── types/
+│       │   ├── constants/
+│       │   ├── dto/
+│       │   ├── utils/
 │       │   └── index.ts
-│       └── tsconfig.lib.json
+│       ├── tsconfig.lib.json
+│       └── package.json
 │
-├── proto/                      # gRPC Protocol Definitions
-│   └── auth.proto              # Auth service proto
-│
-├── prisma/                     # Database
-│   └── schema.prisma           # Prisma schema
+├── prisma/
+│   └── schema.prisma           # Database schema
 │
 ├── nest-cli.json               # NestJS CLI config
-├── tsconfig.json               # TypeScript config
 ├── tsconfig.base.json          # Base TypeScript config
-├── package.json                # Server dependencies
-└── .env                        # Environment variables
+├── package.json                # Root package.json
+├── .env.example                # Environment variables template
+└── README.md                   # Documentation
 ```
 
-### Shared Package
+## Apps
 
-```
-shared/
-├── src/
-│   ├── types/          # TypeScript types & interfaces
-│   ├── dto/            # Data Transfer Objects
-│   ├── constants/      # Constants, enums, API endpoints
-│   ├── utils/          # Utility functions
-│   └── index.ts        # Export all
-├── package.json
-└── tsconfig.json
-```
+### 1. API Gateway (`apps/api-gateway`)
+- **Port:** 3000
+- **Mục đích:** Entry point duy nhất cho tất cả HTTP requests
+- **Chức năng:**
+  - Xử lý HTTP requests
+  - JWT authentication
+  - CORS configuration
+  - Forward requests đến các microservices qua gRPC
 
-### Web User (Frontend)
+### 2. Auth Service (`apps/auth-service`)
+- **Port:** 3001 (HTTP), 50051 (gRPC)
+- **Mục đích:** Microservice xử lý authentication
+- **Chức năng:**
+  - User registration
+  - User login
+  - JWT token generation
+  - User validation
 
-```
-web-user/
-├── app/                # Next.js App Router
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-├── package.json
-├── next.config.js
-└── tsconfig.json
-```
+### 3. Web User (`apps/web-user`)
+- **Port:** 3002
+- **Mục đích:** Frontend cho khách hàng
+- **Tech Stack:** Next.js 14, React 18, TypeScript
 
-### Web Manager (Frontend)
+### 4. Web Manager (`apps/web-manager`)
+- **Port:** 3003
+- **Mục đích:** Frontend cho quản trị viên
+- **Tech Stack:** Next.js 14, React 18, TypeScript
 
-```
-web-manager/
-├── app/                # Next.js App Router
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-├── package.json
-├── next.config.js
-└── tsconfig.json
-```
+## Shared Library (`libs/shared`)
 
-## 🎯 Modules và Components
+Chứa code dùng chung:
+- **Types:** TypeScript interfaces và enums
+- **Constants:** API endpoints, message patterns, validation rules
+- **DTOs:** Data Transfer Objects
+- **Utils:** Utility functions
 
-### API Gateway
-
-**Vai trò**: Cổng vào duy nhất cho frontend, nhận HTTP requests và forward đến microservices qua gRPC.
-
-**Modules**:
-- `auth/` - Auth endpoints (register, login, profile)
-
-**Features**:
-- HTTP REST API
-- JWT Authentication
-- Swagger Documentation
-- CORS configuration
-- Request validation
-
-### Auth Service
-
-**Vai trò**: Xử lý authentication và authorization logic.
-
-**Modules**:
-- `auth/` - Auth business logic (gRPC)
-
-**Features**:
-- gRPC service
-- User authentication
-- JWT token generation
-- Password hashing
-- Database operations
-
-### Shared Libraries
-
-#### `@goride/common`
-- **Decorators**: `@Public()`, `@Roles()`
-- **Guards**: `JwtAuthGuard`, `RolesGuard`
-
-#### `@goride/prisma`
-- **PrismaService**: Database service
-- **PrismaModule**: Global module
-
-## 📡 Communication Pattern
-
-### Frontend → API Gateway
-```
-HTTP REST API
-POST /api/v1/auth/login
+**Import trong code:**
+```typescript
+import { LoginDto, RegisterDto } from '@goride/shared';
+import { API_ENDPOINTS, MESSAGE_PATTERNS } from '@goride/shared';
+import { formatCurrency, isValidEmail } from '@goride/shared';
 ```
 
-### API Gateway → Microservices
-```
-gRPC
-AuthService.Login(request)
-```
+## Database
 
-### Microservices → Database
-```
-Prisma ORM
-prisma.user.findUnique()
-```
+- **ORM:** Prisma
+- **Database:** PostgreSQL
+- **Schema:** `prisma/schema.prisma`
 
-## 🔧 Configuration Files
+## Scripts
 
-### Root Level
-- `package.json` - Workspaces configuration, scripts
-- `env.example` - Environment variables template
-
-### Server
-- `nest-cli.json` - NestJS projects configuration
-- `tsconfig.json` - TypeScript configuration
-- `tsconfig.base.json` - Base TypeScript config
-- `package.json` - Server dependencies
-
-### Applications
-- `apps/*/tsconfig.app.json` - App-specific TypeScript config
-- `libs/*/tsconfig.lib.json` - Library-specific TypeScript config
-
-## 📦 Package Management
-
-Dự án sử dụng **NPM Workspaces** để quản lý multiple packages:
-
-```json
-{
-  "workspaces": [
-    "server",
-    "shared",
-    "web-user",
-    "web-manager"
-  ]
-}
+### Development
+```bash
+npm run dev                    # Chạy tất cả services
+npm run dev:gateway           # Chỉ chạy API Gateway
+npm run dev:auth              # Chỉ chạy Auth Service
+npm run dev:web-user          # Chỉ chạy Web User
+npm run dev:web-manager       # Chỉ chạy Web Manager
 ```
 
-## 🔌 Ports và Protocols
+### Build
+```bash
+npm run build                 # Build tất cả apps
+```
 
-| Service | Port | Protocol | Description |
-|---------|------|----------|-------------|
-| API Gateway | 3000 | HTTP | REST API endpoint |
-| Auth Service | 50051 | gRPC | Internal microservice |
-| Web User | 3003 | HTTP | Frontend app |
-| Web Manager | 3002 | HTTP | Admin frontend app |
+### Prisma
+```bash
+npm run prisma:generate       # Generate Prisma Client
+npm run prisma:migrate        # Run migrations
+npm run prisma:studio         # Open Prisma Studio
+```
 
-## 🎨 Naming Conventions
+## Environment Variables
 
-### Files
-- Controllers: `*.controller.ts`
-- Services: `*.service.ts`
-- Modules: `*.module.ts`
-- DTOs: `*.dto.ts`
-- Interfaces: `*.interface.ts`
+Tạo file `.env` ở root với các biến môi trường (xem `.env.example`)
 
-### Directories
-- Feature modules: `auth/`, `user/`, `rental/`
-- Shared code: `libs/common/`, `libs/prisma/`
-- Applications: `apps/api-gateway/`, `apps/auth-service/`
+## Lưu ý quan trọng
 
-### Packages
-- `@goride/shared` - Shared package
-- `@goride/common` - Common library
-- `@goride/prisma` - Prisma library
+1. **Di chuyển code:** Bạn cần di chuyển thủ công `web-user/` và `web-manager/` vào `apps/` (xem `MIGRATION_GUIDE.md`)
 
-## 📝 Next Steps
+2. **Dependencies:** Sau khi di chuyển, chạy `npm install` ở root để cài đặt tất cả dependencies
 
-Khi mở rộng dự án, có thể thêm:
-- User Service
-- Rental Service
-- Payment Service
-- AI Service
-- Các libs mới nếu cần
+3. **Prisma:** Chạy `npm run prisma:generate` sau khi cài đặt để generate Prisma Client
 
-Tất cả đều theo cấu trúc hiện tại.
+4. **Ports:** Đảm bảo các ports không bị conflict:
+   - 3000: API Gateway
+   - 3001: Auth Service HTTP
+   - 3002: Web User
+   - 3003: Web Manager
+   - 50051: Auth Service gRPC

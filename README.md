@@ -1,100 +1,173 @@
-# GoRide - Online Motorbike Rental Website
+# GoRide - NestJS Monorepo
 
-Website cho thuê xe máy trực tuyến tại Quy Nhơn - Monorepo với Microservices Architecture
+> 🚀 **Nền tảng cho thuê xe máy tại Quy Nhơn** - Kiến trúc microservices với NestJS và Next.js
 
-## 🏗️ Kiến Trúc
+## 📚 Tài Liệu
 
-Dự án sử dụng **Microservices Architecture** với:
-- **API Gateway** - Cổng vào duy nhất cho frontend (HTTP REST API)
-- **Microservices** - Các services độc lập giao tiếp qua gRPC
-- **Shared Libraries** - Code dùng chung (common, prisma)
-- **Frontend Applications** - Web User và Web Manager (Next.js)
+- **[📖 Hướng Dẫn Setup Chi Tiết](./SETUP_GUIDE.md)** - Hướng dẫn đầy đủ cách cài đặt và chạy dự án
+- **[📋 Cấu Trúc Dự Án](./PROJECT_STRUCTURE.md)** - Chi tiết về kiến trúc và cấu trúc thư mục
 
-## 📁 Cấu Trúc Monorepo
-
-```
-PRN232-CA/
-├── server/              # Backend (NestJS Monorepo)
-│   ├── apps/
-│   │   ├── api-gateway/        # API Gateway
-│   │   └── auth-service/       # Auth Service (gRPC)
-│   ├── libs/
-│   │   ├── common/             # Shared common (decorators, guards)
-│   │   └── prisma/             # Prisma service (shared)
-│   ├── proto/                  # gRPC protocol definitions
-│   └── prisma/                 # Database schema
-│
-├── shared/              # Shared package (Types, DTOs, Constants, Utils)
-├── web-user/           # Frontend cho người dùng (Next.js)
-├── web-manager/        # Frontend cho admin (Next.js)
-└── package.json        # Root package.json
-```
-
-## 🚀 Quick Start
-
-Xem chi tiết trong [START.md](./START.md)
+## ⚡ Quick Start
 
 ```bash
-# Cài đặt dependencies
-npm run install:all
+# 1. Cài đặt dependencies
+npm install
 
-# Chạy tất cả services
-npm start
+# 2. Cấu hình database (tạo file .env từ .env.example)
+cp .env.example .env
+# Cập nhật DATABASE_URL trong .env
+
+# 3. Setup database
+npm run prisma:generate
+npm run prisma:migrate
+
+# 4. Chạy tất cả services
+npm run dev
 ```
 
-## 📚 Documentation
+**Truy cập:**
+- 🌐 Web User: http://localhost:3002
+- 🔧 Web Manager: http://localhost:3003
+- 🔌 API Gateway: http://localhost:3000/api/v1
 
-- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Giới thiệu chi tiết cấu trúc dự án
-- **[START.md](./START.md)** - Hướng dẫn chạy dự án chi tiết
+> 💡 **Xem [SETUP_GUIDE.md](./SETUP_GUIDE.md) để biết hướng dẫn chi tiết**
 
-## 🛠️ Technology Stack
+## Cấu trúc dự án
 
-### Backend
-- **NestJS** - Node.js Framework với Microservices
-- **gRPC** - Communication protocol giữa services
-- **Prisma** - ORM
-- **PostgreSQL** - Database
-- **JWT** - Authentication
-- **Swagger** - API Documentation
+```
+goride/
+├── apps/
+│   ├── api-gateway/        # NestJS API Gateway (Port 3000)
+│   ├── auth-service/       # NestJS Auth Microservice (Port 3001)
+│   ├── web-user/          # Next.js Frontend User (Port 3002)
+│   └── web-manager/        # Next.js Frontend Manager (Port 3003)
+├── libs/
+│   └── shared/             # Shared code, types, constants
+├── prisma/
+│   └── schema.prisma       # Prisma database schema
+├── nest-cli.json           # NestJS CLI configuration
+├── tsconfig.base.json      # Base TypeScript configuration
+└── package.json            # Root package.json
+```
 
-### Frontend
-- **Next.js 14** - React Framework (App Router)
-- **TypeScript** - Type Safety
-- **React 18** - UI Library
+## Cài đặt
 
-### Shared
-- **TypeScript** - Types, DTOs, Constants, Utils
+```bash
+npm install
+```
 
-## 🔌 Ports
+## Chạy Prisma
 
-| Service | Port | Protocol | URL |
-|---------|------|----------|-----|
-| **API Gateway** | 3000 | HTTP | http://localhost:3000 |
-| **Auth Service** | 50051 | gRPC | Internal |
-| **Web User** | 3003 | HTTP | http://localhost:3003 |
-| **Web Manager** | 3002 | HTTP | http://localhost:3002 |
-| **API Docs** | - | HTTP | http://localhost:3000/api/docs |
+```bash
+# Generate Prisma Client
+npm run prisma:generate
 
-## 📦 Packages
+# Run migrations
+npm run prisma:migrate
 
-- `@goride/shared` - Shared types, DTOs, constants, utils
-- `@goride/common` - Common decorators, guards (server)
-- `@goride/prisma` - Prisma service (server)
+# Open Prisma Studio
+npm run prisma:studio
+```
 
-## 🎯 Features
+## Chạy Development
 
-- ✅ Microservices Architecture với gRPC
-- ✅ API Gateway pattern
-- ✅ Authentication & Authorization (JWT)
-- ✅ Database với Prisma ORM
-- ✅ Monorepo structure
-- ✅ TypeScript cho type safety
-- ✅ Swagger API Documentation
+```bash
+# Chạy tất cả services
+npm run dev
 
-## 📖 Development
+# Hoặc chạy từng service riêng:
+npm run dev:gateway      # API Gateway
+npm run dev:auth         # Auth Service
+npm run dev:web-user     # Web User Frontend
+npm run dev:web-manager  # Web Manager Frontend
+```
 
-Xem [START.md](./START.md) để biết cách setup và chạy dự án.
+## Build
 
-## 📝 License
+```bash
+npm run build
+```
 
-MIT
+## Cấu hình môi trường
+
+Tạo file `.env` ở root với nội dung:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/goride_db?schema=public"
+
+# JWT
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
+JWT_EXPIRES_IN="7d"
+JWT_REFRESH_SECRET="your-refresh-secret-key"
+JWT_REFRESH_EXPIRES_IN="30d"
+
+# API Gateway
+GATEWAY_PORT=3000
+API_PREFIX=api/v1
+NODE_ENV=development
+CORS_ORIGIN="http://localhost:3002,http://localhost:3003"
+
+# Auth Service (Microservice)
+AUTH_SERVICE_HOST=localhost
+AUTH_SERVICE_PORT=3001
+AUTH_SERVICE_HTTP_PORT=3001
+```
+
+## Di chuyển code từ cấu trúc cũ
+
+**LƯU Ý:** Bạn cần di chuyển thủ công các thư mục sau vào `apps/`:
+
+1. **web-user** → **apps/web-user**
+   - Copy toàn bộ nội dung từ `web-user/` vào `apps/web-user/`
+   - Giữ nguyên cấu trúc Next.js
+
+2. **web-manager** → **apps/web-manager**
+   - Copy toàn bộ nội dung từ `web-manager/` vào `apps/web-manager/`
+   - Giữ nguyên cấu trúc Next.js
+
+3. **shared** → **libs/shared**
+   - Đã được copy tự động vào `libs/shared/src/`
+
+4. **server/prisma** → **prisma**
+   - Schema đã được copy vào `prisma/schema.prisma`
+
+Sau khi di chuyển, bạn có thể xóa các thư mục cũ:
+- `web-user/`
+- `web-manager/`
+- `server/`
+- `shared/`
+
+## Cấu trúc Apps
+
+### API Gateway (`apps/api-gateway`)
+- Entry point: `src/main.ts`
+- Module chính: `src/app.module.ts`
+- Auth module: `src/auth/auth.module.ts`
+
+### Auth Service (`apps/auth-service`)
+- Entry point: `src/main.ts`
+- Module chính: `src/app.module.ts`
+- Auth gRPC controller: `src/auth/auth.grpc.controller.ts`
+
+### Web User (`apps/web-user`)
+- Next.js 14 App Router
+- Port: 3002
+
+### Web Manager (`apps/web-manager`)
+- Next.js 14 App Router
+- Port: 3003
+
+## Shared Library (`libs/shared`)
+
+Chứa:
+- Types: `src/types/`
+- Constants: `src/constants/`
+- DTOs: `src/dto/`
+- Utils: `src/utils/`
+
+Import trong code:
+```typescript
+import { LoginDto, RegisterDto } from '@goride/shared';
+import { API_ENDPOINTS } from '@goride/shared';
+```
