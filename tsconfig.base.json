@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": false,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -21,5 +23,9 @@
       "@goride/shared": ["libs/shared/src"],
       "@goride/shared/*": ["libs/shared/src/*"]
     }
+  },
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node"
   }
 }
