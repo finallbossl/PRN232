@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package motorbike;
+
+// Motorbike Service Definition
+service MotorbikeService {
+  rpc CreateMotorbike (CreateMotorbikeRequest) returns (MotorbikeResponse);
+  rpc UpdateMotorbike (UpdateMotorbikeRequest) returns (MotorbikeResponse);
+  rpc DeleteMotorbike (DeleteMotorbikeRequest) returns (DeleteMotorbikeResponse);
+  rpc GetMotorbikeById (GetMotorbikeByIdRequest) returns (MotorbikeResponse);
+  rpc ListMotorbikes (ListMotorbikesRequest) returns (ListMotorbikesResponse);
+}
+
+// Create Motorbike Request
+message CreateMotorbikeRequest {
+  string name = 1;
+  string type = 2; // MANUAL, SCOOTER, SEMI_AUTO
+  double pricePerDay = 3;
+  optional string description = 4;
+  string licensePlate = 5;
+  optional int32 year = 6;
+  repeated string images = 7;
+  optional string fuelCapacity = 8;
+  optional string engineSize = 9;
+}
+
+// Update Motorbike Request
+message UpdateMotorbikeRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string type = 3;
+  optional double pricePerDay = 4;
+  optional string description = 5;
+  optional string status = 6; // AVAILABLE, RENTED, MAINTENANCE, UNAVAILABLE
+  repeated string images = 7;
+  optional string fuelCapacity = 8;
+  optional string engineSize = 9;
+}
+
+// Delete Motorbike Request
+message DeleteMotorbikeRequest {
+  string id = 1;
+}
+
+// Delete Motorbike Response
+message DeleteMotorbikeResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Get Motorbike By Id Request
+message GetMotorbikeByIdRequest {
+  string id = 1;
+}
+
+// List Motorbikes Request
+message ListMotorbikesRequest {
+  optional string type = 1;
+  optional double minPrice = 2;
+  optional double maxPrice = 3;
+  optional string status = 4;
+  optional string search = 5;
+  int32 page = 6;
+  int32 limit = 7;
+}
+
+// Motorbike Message
+message Motorbike {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  double pricePerDay = 4;
+  optional string description = 5;
+  string status = 6;
+  string licensePlate = 7;
+  optional int32 year = 8;
+  repeated string images = 9;
+  optional string fuelCapacity = 10;
+  optional string engineSize = 11;
+  string createdAt = 12;
+  string updatedAt = 13;
+}
+
+// Motorbike Response
+message MotorbikeResponse {
+  Motorbike motorbike = 1;
+}
+
+// List Motorbikes Response
+message ListMotorbikesResponse {
+  repeated Motorbike motorbikes = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}

@@ -6,7 +6,7 @@ package auth;
 service AuthService {
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
-  rpc Validate (ValidateRequest) returns (ValidateResponse);
+  rpc ValidateUser (ValidateUserRequest) returns (ValidateUserResponse);
   rpc Refresh (RefreshRequest) returns (RefreshResponse);
 }
 
@@ -23,8 +23,8 @@ message RegisterResponse {
   bool success = 1;
   string message = 2;
   UserData user = 3;
-  string access_token = 4;
-  string refresh_token = 5;
+  string accessToken = 4;
+  string refreshToken = 5;
 }
 
 // Login Request/Response
@@ -37,30 +37,30 @@ message LoginResponse {
   bool success = 1;
   string message = 2;
   UserData user = 3;
-  string access_token = 4;
-  string refresh_token = 5;
+  string accessToken = 4;
+  string refreshToken = 5;
 }
 
-// Validate Request/Response (for JWT validation)
-message ValidateRequest {
-  string token = 1;
+// Validate User Request/Response
+message ValidateUserRequest {
+  string userId = 1;
 }
 
-message ValidateResponse {
-  bool valid = 1;
+message ValidateUserResponse {
+  bool success = 1;
   UserData user = 2;
   string message = 3;
 }
 
 // Refresh Token Request/Response
 message RefreshRequest {
-  string refresh_token = 1;
+  string refreshToken = 1;
 }
 
 message RefreshResponse {
   bool success = 1;
-  string access_token = 2;
-  string refresh_token = 3;
+  string accessToken = 2;
+  string refreshToken = 3;
   string message = 4;
 }
 
