@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package rental;
+
+// Rental Service Definition
+service RentalService {
+  rpc CreateRental (CreateRentalRequest) returns (RentalResponse);
+  rpc GetRentalById (GetRentalRequest) returns (RentalResponse);
+  rpc UpdateRentalStatus (UpdateRentalStatusRequest) returns (RentalResponse);
+  rpc ListUserRentals (ListUserRentalsRequest) returns (ListRentalsResponse);
+  rpc ListAllRentals (ListAllRentalsRequest) returns (ListRentalsResponse);
+}
+
+// Create Rental Request
+message CreateRentalRequest {
+  string userId = 1;
+  string motorbikeId = 2;
+  string startDate = 3;
+  string endDate = 4;
+  string pickupLocation = 5;
+  string returnLocation = 6;
+  optional string notes = 7;
+}
+
+// Get Rental Request
+message GetRentalRequest {
+  string id = 1;
+}
+
+// Update Rental Status Request
+message UpdateRentalStatusRequest {
+  string id = 1;
+  string status = 2;
+}
+
+// List User Rentals Request
+message ListUserRentalsRequest {
+  string userId = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+// List All Rentals Request
+message ListAllRentalsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  optional string status = 3;
+}
+
+// Rental Message
+message Rental {
+  string id = 1;
+  string userId = 2;
+  string motorbikeId = 3;
+  string startDate = 4;
+  string endDate = 5;
+  string pickupLocation = 6;
+  string returnLocation = 7;
+  string status = 8;
+  double totalPrice = 9;
+  int32 numberOfDays = 10;
+  optional string notes = 11;
+  string createdAt = 12;
+  string updatedAt = 13;
+  // Optional: Inner join data
+  optional MotorbikeInfo motorbike = 14;
+}
+
+message MotorbikeInfo {
+  string id = 1;
+  string name = 2;
+  string licensePlate = 3;
+}
+
+// Rental Response
+message RentalResponse {
+  Rental rental = 1;
+}
+
+// List Rentals Response
+message ListRentalsResponse {
+  repeated Rental rentals = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}

@@ -38,9 +38,11 @@ export class AuthController {
         message: 'Đăng ký tài khoản thành công',
       };
     } catch (error) {
+      const errorMsg = error.details || error.message || 'Đăng ký thất bại';
       return {
         success: false,
-        error: error.message || 'Đăng ký thất bại',
+        error: errorMsg,
+        message: errorMsg,
       };
     }
   }
@@ -61,9 +63,11 @@ export class AuthController {
         message: 'Đăng nhập thành công',
       };
     } catch (error) {
+      const errorMsg = error.details || error.message || 'Đăng nhập thất bại';
       return {
         success: false,
-        error: error.message || 'Đăng nhập thất bại',
+        error: errorMsg,
+        message: errorMsg,
       };
     }
   }
@@ -88,7 +92,7 @@ export class AuthController {
     } catch (error) {
       return {
         success: false,
-        error: error.message || 'Không thể lấy thông tin người dùng',
+        error: error.details || error.message || 'Không thể lấy thông tin người dùng',
       };
     }
   }
@@ -111,7 +115,7 @@ export class AuthController {
     } catch (error) {
       return {
         success: false,
-        error: error.message || 'Làm mới token thất bại',
+        error: error.details || error.message || 'Làm mới token thất bại',
       };
     }
   }

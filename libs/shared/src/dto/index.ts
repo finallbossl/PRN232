@@ -5,18 +5,7 @@ export * from './auth.dto';
 export * from './motorbike.dto';
 
 // Rental DTOs
-export interface CreateRentalDto {
-  motorbikeId: string;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
-  pickupLocation: string;
-  returnLocation: string;
-  notes?: string;
-}
-
-export interface UpdateRentalStatusDto {
-  status: string;
-}
+export * from './rental.dto';
 
 // Payment DTOs
 export interface CreatePaymentDto {

@@ -24,9 +24,10 @@
     "dev:auth": "nest start auth-service --watch",
     "dev:user": "nest start user-service --watch",
     "dev:motorbike": "nest start motorbike-service --watch",
+    "dev:rental": "nest start rental-service --watch",
     "dev:web-user": "npm run dev -w @goride/web-user",
     "dev:web-manager": "npm run dev -w @goride/web-manager",
-    "dev:be": "concurrently \"npm run dev:gateway\" \"npm run dev:auth\" \"npm run dev:user\" \"npm run dev:motorbike\"",
+    "dev:be": "concurrently \"npm run dev:gateway\" \"npm run dev:auth\" \"npm run dev:user\" \"npm run dev:motorbike\" \"npm run dev:rental\"",
     "dev:fe": "concurrently \"npm run dev:web-user\" \"npm run dev:web-manager\"",
     "dev": "concurrently \"npm run dev:be\" \"npm run dev:fe\"",
     "prisma:generate": "prisma generate",
@@ -104,5 +105,8 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

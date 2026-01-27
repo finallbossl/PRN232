@@ -34,6 +34,9 @@
       ],
       "@motorbike/*": [
         "apps/api-gateway/src/motorbike/*"
+      ],
+      "@rental/*": [
+        "apps/api-gateway/src/rental/*"
       ]
     }
   },

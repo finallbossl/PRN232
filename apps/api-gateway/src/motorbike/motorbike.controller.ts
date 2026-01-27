@@ -39,7 +39,7 @@ export class MotorbikeController {
         } catch (error) {
             return {
                 success: false,
-                error: error.message || 'Không thể lấy danh sách xe',
+                error: error.details || error.message || 'Không thể lấy danh sách xe',
             };
         }
     }
@@ -60,7 +60,7 @@ export class MotorbikeController {
         } catch (error) {
             return {
                 success: false,
-                error: error.message || 'Không tìm thấy xe',
+                error: error.details || error.message || 'Không tìm thấy xe',
             };
         }
     }
@@ -84,7 +84,7 @@ export class MotorbikeController {
         } catch (error) {
             return {
                 success: false,
-                error: error.message || 'Thêm xe mới thất bại',
+                error: error.details || error.message || 'Thêm xe mới thất bại',
             };
         }
     }
@@ -111,7 +111,7 @@ export class MotorbikeController {
         } catch (error) {
             return {
                 success: false,
-                error: error.message || 'Cập nhật xe thất bại',
+                error: error.details || error.message || 'Cập nhật xe thất bại',
             };
         }
     }
@@ -133,7 +133,7 @@ export class MotorbikeController {
         } catch (error) {
             return {
                 success: false,
-                error: error.message || 'Xóa xe thất bại',
+                error: error.details || error.message || 'Xóa xe thất bại',
             };
         }
     }

@@ -46,6 +46,15 @@
         "tsConfigPath": "apps/motorbike-service/tsconfig.app.json"
       }
     },
+    "rental-service": {
+      "type": "application",
+      "root": "apps/rental-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/rental-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/rental-service/tsconfig.app.json"
+      }
+    },
     "shared": {
       "type": "library",
       "root": "libs/shared",
