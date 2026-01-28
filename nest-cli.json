@@ -19,42 +19,6 @@
         "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
       }
     },
-    "auth-service": {
-      "type": "application",
-      "root": "apps/auth-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/auth-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/auth-service/tsconfig.app.json"
-      }
-    },
-    "user-service": {
-      "type": "application",
-      "root": "apps/user-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/user-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/user-service/tsconfig.app.json"
-      }
-    },
-    "motorbike-service": {
-      "type": "application",
-      "root": "apps/motorbike-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/motorbike-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/motorbike-service/tsconfig.app.json"
-      }
-    },
-    "rental-service": {
-      "type": "application",
-      "root": "apps/rental-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/rental-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/rental-service/tsconfig.app.json"
-      }
-    },
     "shared": {
       "type": "library",
       "root": "libs/shared",
