@@ -1,215 +1,296 @@
 'use client';
 
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { 
-  Star, MapPin, Share2, Heart, ShieldCheck, 
-  Zap, Fuel, Gauge, Droplets, CheckCircle2, 
-  Info, ShieldAlert, Award, Calendar, Clock,
-  ArrowRight, CreditCard, ChevronRight, MessageSquare
+import {
+  Star, MapPin, Calendar, Clock, ShieldCheck,
+  Heart, Share2, MessageSquare, ChevronRight, 
+  ArrowLeft, User, Phone, FileText, Upload, 
+  CreditCard, CheckCircle2, X, AlertCircle, Camera
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
 export default function CarDetailPage() {
+  const { isLoggedIn, user: authUser } = useAuth();
+  const router = useRouter();
+  const params = useParams();
+  
+  // Booking State - Dates
+  const [startDate, setStartDate] = useState("2026-05-12");
+  const [endDate, setEndDate] = useState("2026-05-15");
+
+  const { days, totalPrice, totalPriceRaw } = useMemo(() => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const finalDays = diffDays > 0 ? diffDays : 1;
+    const pricePerDay = 350000;
+    const total = finalDays * pricePerDay;
+    
+    return {
+      days: finalDays,
+      totalPrice: total.toLocaleString('vi-VN') + " VNĐ",
+      totalPriceRaw: total
+    };
+  }, [startDate, endDate]);
+
+  const startBooking = () => {
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+    // Pass dates via query params
+    router.push(`/booking/${params.id}?start=${startDate}&end=${endDate}`);
+  };
+
   return (
-    <main className="bg-background relative min-h-screen pb-40">
-      {/* Editorial Navigation */}
-      <div className="container pt-12">
-        <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-[0.4em] text-primary/20 mb-12">
-          <Link href="/" className="hover:text-cta transition-colors">Home</Link>
-          <ChevronRight size={10} className="text-primary/10" />
-          <Link href="/cars" className="hover:text-cta transition-colors">Elite Fleet</Link>
-          <ChevronRight size={10} className="text-primary/10" />
-          <span className="text-cta">Honda SH 150i Edition</span>
+    <main className="min-h-screen bg-[#FAF9F6] pt-32 pb-20 px-6">
+      <div className="container mx-auto max-w-7xl">
+        
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-primary/30">
+            <Link href="/" className="hover:text-cta transition-colors">Trang chủ</Link>
+            <ChevronRight size={12} />
+            <Link href="/cars" className="hover:text-cta transition-colors">Khám phá xe</Link>
+            <ChevronRight size={12} />
+            <span className="text-primary/60 italic">Honda SH 150i ABS</span>
+          </div>
+          <div className="flex items-center gap-4">
+             <button className="h-12 w-12 rounded-2xl bg-white border border-primary/5 flex items-center justify-center text-primary/40 hover:text-red-500 hover:bg-red-50 transition-all shadow-luxury-sm">
+                <Heart size={20} />
+             </button>
+             <button className="h-12 w-12 rounded-2xl bg-white border border-primary/5 flex items-center justify-center text-primary/40 hover:text-cta hover:bg-cta/5 transition-all shadow-luxury-sm">
+                <Share2 size={20} />
+             </button>
+          </div>
         </div>
 
-        <div className="lg:grid lg:grid-cols-12 lg:gap-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          {/* Curated Content & Visuals */}
-          <div className="lg:col-span-8 space-y-20">
-            
-            {/* 1. Immersive Gallery */}
-            <section>
-              <div className="group relative aspect-[16/9] w-full overflow-hidden rounded-[4.5rem] shadow-luxury-xl border-[12px] border-white/50 bg-white/40 backdrop-blur-md">
-                <img 
-                  src="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200" 
-                  alt="Honda SH 150i Essential" 
-                  className="h-full w-full object-cover transition-transform duration-[8s] group-hover:scale-105"
+          {/* LEFT CONTENT: Gallery & Details */}
+          <div className="lg:col-span-8 space-y-16">
+            {/* Gallery */}
+            <section className="relative group">
+              <div className="aspect-[16/9] rounded-[3.5rem] overflow-hidden shadow-luxury-2xl border border-white/20">
+                <img
+                  src="https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=1200"
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                  alt="Honda SH 150i"
                 />
-                <div className="absolute top-10 right-10 flex gap-4 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
-                   <button className="h-14 w-14 flex items-center justify-center rounded-luxury glass-card border-white/40 text-primary transition-all hover:bg-cta hover:text-white shadow-luxury-xl"><Share2 size={22}/></button>
-                   <button className="h-14 w-14 flex items-center justify-center rounded-luxury glass-card border-white/40 text-primary transition-all hover:bg-red-500 hover:text-white shadow-luxury-xl"><Heart size={22}/></button>
+                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-primary/40 to-transparent pointer-events-none" />
+              </div>
+              <div className="absolute bottom-6 right-6 flex gap-3">
+                 {[1, 2, 3].map(i => (
+                   <div key={i} className="h-20 w-32 rounded-2xl overflow-hidden border-2 border-white shadow-luxury-lg cursor-pointer hover:scale-105 transition-transform">
+                      <img src={`https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=200&sig=${i}`} className="h-full w-full object-cover" />
+                   </div>
+                 ))}
+                 <div className="h-20 w-32 rounded-2xl bg-primary/95 flex flex-col items-center justify-center text-white cursor-pointer hover:bg-cta transition-colors">
+                    <span className="text-xl font-bold">+12</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest">Ảnh chi tiết</span>
+                 </div>
+              </div>
+            </section>
+
+            {/* Title & Stats */}
+            <section>
+              <div className="flex items-center gap-3 mb-4">
+                 <div className="h-1 w-10 bg-cta rounded-full" />
+                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cta italic">The Elite Choice</span>
+              </div>
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                <div>
+                   <h1 className="text-5xl md:text-7xl font-bold text-primary tracking-tighter mb-4 leading-none">
+                    Honda <span className="text-cta">SH 150i</span> ABS
+                   </h1>
+                   <div className="flex flex-wrap items-center gap-8 text-primary/40">
+                      <div className="flex items-center gap-2">
+                        <div className="flex text-cta">
+                          {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
+                        </div>
+                        <span className="text-sm font-black text-primary italic">5.0 <span className="text-primary/20 font-medium">/ 324 chuyến</span></span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center text-cta">
+                           <MapPin size={16} />
+                         </div>
+                         <p className="text-sm font-bold text-primary">Quy Nhơn Elite Hub</p>
+                      </div>
+                   </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-[2rem] border border-primary/5 shadow-luxury-sm">
+                   <ShieldCheck size={20} className="text-emerald-500" />
+                   <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-primary/30 leading-none mb-1">Bảo hiểm</p>
+                      <p className="text-xs font-bold text-primary leading-none">Elite Shield 2026 Ready</p>
+                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-8 mt-10">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="aspect-[4/3] overflow-hidden rounded-[2rem] border-4 border-white shadow-soft-lg transition-all hover:shadow-luxury-xl hover:-translate-y-2 cursor-pointer liquid-hover">
-                    <img 
-                      src={`https://images.unsplash.com/photo-${i % 2 === 0 ? '1591637333184-19aa84b3e01f' : '1558981403-c5f91cbba527'}?auto=format&fit=crop&q=80&w=400`} 
-                      alt={`Elite Perspective ${i}`} 
-                      className="h-full w-full object-cover" 
-                    />
+            </section>
+
+            {/* Description */}
+            <div className="grid md:grid-cols-2 gap-12 border-t border-primary/5 pt-12">
+               <div className="space-y-6">
+                  <h3 className="text-xl font-black text-primary uppercase tracking-widest">Tuyệt tác di chuyển</h3>
+                  <p className="text-primary/50 leading-relaxed font-medium">
+                    Honda SH 150i ABS 2026 định nghĩa lại chuẩn mực của dòng xe tay ga hạng sang. Với khối động cơ eSP+ thế mạnh, hệ thống kiểm soát lực kéo HSTC và phanh ABS đôi, mỗi hành trình của bạn tại Quy Nhơn không chỉ là di chuyển, mà là một trải nghiệm phong cách sống thượng lưu.
+                  </p>
+               </div>
+               <div className="grid grid-cols-2 gap-6">
+                  {[
+                    { label: "Động cơ", val: "157.1cc eSP+", icon: <Clock size={18}/> },
+                    { label: "Công suất", val: "16.0 HP / 8500", icon: <Star size={18}/> },
+                    { label: "Tiêu thụ", val: "2.2L / 100km", icon: <CreditCard size={18}/> },
+                    { label: "Tiện ích", val: "Smart Key / USB", icon: <ShieldCheck size={18}/> }
+                  ].map((item, idx) => (
+                    <div key={idx} className="p-5 rounded-3xl bg-white border border-primary/5 flex flex-col gap-4">
+                       <div className="h-10 w-10 rounded-xl bg-primary/5 text-cta flex items-center justify-center">
+                          {item.icon}
+                       </div>
+                       <div>
+                          <p className="text-[9px] font-black text-primary/30 uppercase tracking-[0.2em] mb-1">{item.label}</p>
+                          <p className="text-xs font-bold text-primary">{item.val}</p>
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+
+            {/* Comments */}
+            <section className="bg-white p-12 rounded-[3.5rem] border border-primary/5 shadow-luxury-lg">
+              <div className="flex items-center justify-between mb-12">
+                <h2 className="text-2xl font-black text-primary uppercase tracking-widest flex items-center gap-4">
+                  <MessageSquare size={24} className="text-cta"/> Cảm nhận khách hàng
+                </h2>
+                <button className="text-[10px] font-black text-cta uppercase tracking-widest border-b-2 border-cta/20 pb-1">Xem tất cả</button>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8 mb-12">
+                {[
+                  { name: "Lâm Đình Duy", date: "Hôm qua", content: "Dịch vụ quá chuyên nghiệp, xe mới coong. Chắc chắn sẽ quay lại!", avatar: "2" },
+                  { name: "Phạm Minh Tâm", date: "3 ngày trước", content: "Lấy xe nhanh, tư vấn nhiệt tình. Cung đường ven biển thật tuyệt vời.", avatar: "5" }
+                ].map((comment, i) => (
+                  <div key={i} className="bg-[#FAF9F6] rounded-[2.5rem] p-8 relative">
+                    <div className="flex items-center gap-4 mb-6">
+                       <img src={`https://i.pravatar.cc/100?img=${comment.avatar}`} className="h-12 w-12 rounded-2xl object-cover shadow-soft-sm" alt="" />
+                       <div>
+                          <p className="text-sm font-black text-primary">{comment.name}</p>
+                          <p className="text-[10px] text-primary/30 italic">{comment.date}</p>
+                       </div>
+                    </div>
+                    <p className="text-sm text-primary/60 leading-relaxed font-medium italic">"{comment.content}"</p>
                   </div>
                 ))}
               </div>
-            </section>
 
-            {/* 2. Identity & Status */}
-            <section>
-              <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full glass-card bg-cta/5 border border-cta/10 text-cta mb-8 shadow-soft-sm">
-                 <Award size={16} />
-                 <span className="text-[10px] font-black uppercase tracking-[0.3em]">Pinnacle Collection</span>
-              </div>
-              
-              <h1 className="font-heading text-6xl lg:text-8xl font-bold text-primary tracking-tight leading-[0.85] mb-10">
-                Honda <br/>
-                <span className="text-cta italic font-normal">SH 150i ABS</span>
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-12 border-b border-primary/5 pb-16">
-                 <div className="flex items-center gap-5">
-                    <div className="flex gap-1.5 text-cta">
-                       {[...Array(5)].map((_, i) => <Star key={i} size={18} fill="currentColor" />)}
-                    </div>
-                    <span className="text-sm font-black text-primary">5.0 <span className="opacity-20 font-medium ml-2">/ 256 Elite Reviews</span></span>
-                 </div>
-                 <div className="flex items-center gap-4 text-primary/40">
-                    <div className="h-2 w-2 rounded-full bg-cta animate-ping" />
-                    <span className="text-xs font-black uppercase tracking-widest">Available in Central Hub</span>
-                 </div>
+              {/* Comment Input Mock */}
+              <div className="relative">
+                 <input 
+                  type="text" 
+                  placeholder="Chia sẻ trải nghiệm đẳng cấp của bạn..." 
+                  className="w-full h-20 pl-8 pr-32 rounded-[2.5rem] bg-[#FAF9F6] border border-primary/5 outline-none focus:border-cta/20 transition-all font-bold text-sm"
+                 />
+                 <button className="absolute right-3 top-3 bottom-3 px-8 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-cta transition-colors">Gửi đi</button>
               </div>
             </section>
-
-            {/* 3. Specification Grid */}
-            <section className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-               {[
-                 { icon: Zap, l: 'DRIVETRAIN', v: 'Automatic V' },
-                 { icon: Fuel, l: 'FUEL TYPE', v: '95 Premium' },
-                 { icon: Gauge, l: 'DISPLACEMENT', v: '157cc eSP+' },
-                 { icon: Droplets, l: 'EFFICIENCY', v: '2.2L / 100km' },
-               ].map(s => (
-                 <div key={s.l} className="glass-card p-10 rounded-[3rem] text-center border-white/60 shadow-luxury-xl bg-white/40">
-                    <s.icon size={28} className="text-cta mb-6 mx-auto" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/20 mb-3">{s.l}</p>
-                    <p className="text-sm font-black uppercase tracking-widest text-primary">{s.v}</p>
-                 </div>
-               ))}
-            </section>
-
-            {/* 4. Experience Narrative */}
-            <section className="space-y-16">
-              <div>
-                 <h2 className="font-heading text-4xl font-bold text-primary mb-10 tracking-tight">The Experience</h2>
-                 <p className="text-xl leading-[1.8] text-primary/50 font-medium max-w-3xl italic">
-                   &quot;Honda SH 150i không chỉ là phương tiện, đó là một tuyên ngôn về phong cách sống. Với kỹ thuật chuẩn xác từ Nhật Bản và thiết kế tối giản sang trọng, mỗi hành trình của bạn sẽ trở thành một trải nghiệm nghệ thuật thực thụ.&quot;
-                 </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                 {[
-                   { icon: ShieldCheck, t: 'Dual-Channel ABS', d: 'Kiểm soát tuyệt đối trên mọi địa hình trơn trượt.' },
-                   { icon: Zap, t: 'Enhanced Smartkey', d: 'Bảo mật đa tầng với hệ thống định vị thông minh.' },
-                   { icon: CreditCard, t: 'USB-C Integration', d: 'Giữ năng lượng cho các thiết bị ghi hình chuyên nghiệp.' },
-                   { icon: Info, t: '28L Elite Storage', d: 'Không gian rộng rãi cho mũ bảo hiểm và phụ kiện du hành.' }
-                 ].map(f => (
-                   <div key={f.t} className="flex gap-8 p-10 rounded-[3rem] bg-white border border-primary/5 shadow-soft-lg transition-all hover:shadow-luxury-xl">
-                      <div className="h-14 w-14 flex items-center justify-center rounded-2xl bg-background text-cta shrink-0 shadow-soft-md"><f.icon size={24} /></div>
-                      <div>
-                         <h4 className="font-black text-primary uppercase tracking-widest text-xs mb-3">{f.t}</h4>
-                         <p className="text-sm text-primary/40 leading-relaxed font-medium italic">&quot;{f.d}&quot;</p>
-                      </div>
-                   </div>
-                 ))}
-              </div>
-            </section>
-
-            {/* 5. Elite Concierge */}
-            <section className="relative glass-card p-16 rounded-[5rem] bg-primary text-white overflow-hidden border-none shadow-luxury-xl">
-               <div className="absolute top-[-20%] right-[-10%] w-80 h-80 bg-cta/20 blur-[130px] rounded-full" />
-               <div className="relative z-10 flex flex-col md:flex-row items-center gap-14">
-                  <div className="h-32 w-32 rounded-[3.5rem] overflow-hidden border-[6px] border-white/20 shadow-luxury-xl">
-                     <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=300" alt="Elite Concierge" />
-                  </div>
-                  <div className="flex-1 text-center md:text-left">
-                     <p className="text-[10px] font-black uppercase tracking-[0.5em] text-cta mb-4">Master Concierge</p>
-                     <h3 className="font-heading text-4xl font-bold mb-6 tracking-tight">Host: Julian Alexander</h3>
-                     <div className="flex flex-wrap justify-center md:justify-start gap-8 text-[10px] font-black text-white/30 tracking-[0.2em] uppercase">
-                        <span className="flex items-center gap-2"><div className="h-1 w-1 rounded-full bg-cta"/> REPOSNSE: 100%</span>
-                        <span className="flex items-center gap-2"><div className="h-1 w-1 rounded-full bg-cta"/> VERIFIED: ELITE</span>
-                     </div>
-                  </div>
-                  <button className="luxury-btn-primary bg-white text-cta hover:bg-background border-none px-12 py-5 shadow-luxury-xl">CONTACT HOST</button>
-               </div>
-            </section>
-
           </div>
 
-          {/* 6. Investment & Reservation Sidebar */}
-          <aside className="lg:col-span-4 mt-20 lg:mt-0">
-             <div className="sticky top-32 space-y-12">
-                <div className="glass-card p-14 rounded-[4rem] shadow-luxury-xl border-white/50 bg-white/60 backdrop-blur-3xl border-[10px]">
-                   <div className="flex items-baseline gap-2 mb-12 pb-10 border-b border-primary/5">
-                      <span className="font-heading text-6xl font-black text-primary italic">350k</span>
-                      <span className="text-sm font-black text-primary/10 tracking-[0.3em] uppercase ml-2">/ Day</span>
-                   </div>
+          {/* RIGHT CONTENT: Booking Flow Side */}
+          <aside className="lg:col-span-4 relative">
+            <div className="sticky top-10 flex flex-col gap-8">
+              
+              {/* Main Booking Interface */}
+              <div className="glass-card bg-white rounded-[3.5rem] border border-primary/5 shadow-luxury-2xl overflow-hidden">
+                <div className="p-10 space-y-8">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-bold text-primary tracking-tighter">350.000đ</span>
+                    <span className="text-sm text-primary/30 font-black uppercase tracking-widest">/ Ngày</span>
+                  </div>
 
-                   <form className="space-y-10">
-                      <div className="group">
-                         <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/30 mb-4 block group-focus-within:text-cta transition-colors">Commencement</label>
-                         <div className="relative flex items-center gap-5 px-8 py-5 rounded-[2rem] bg-background border border-transparent focus-within:border-cta/20 transition-all shadow-soft-sm">
-                            <Calendar size={20} className="text-cta" />
-                            <input type="datetime-local" className="bg-transparent border-none outline-none font-bold text-sm text-primary w-full cursor-pointer" defaultValue="2026-01-25T08:00" />
-                         </div>
+                  <div className="space-y-4">
+                      <div className="p-6 rounded-3xl bg-[#FAF9F6] border border-primary/5 group transition-all hover:bg-white hover:border-cta/20">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-primary/30 mb-3 block italic">Bắt đầu hành trình</label>
+                        <div className="flex items-center gap-3">
+                            <Calendar size={18} className="text-cta" />
+                            <input 
+                              type="date" 
+                              value={startDate}
+                              onChange={(e) => setStartDate(e.target.value)}
+                              className="bg-transparent text-sm font-bold text-primary outline-none cursor-pointer uppercase"
+                            />
+                        </div>
                       </div>
-
-                      <div className="group">
-                         <label className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/30 mb-4 block group-focus-within:text-cta transition-colors">Completion</label>
-                         <div className="relative flex items-center gap-5 px-8 py-5 rounded-[2rem] bg-background border border-transparent focus-within:border-cta/20 transition-all shadow-soft-sm">
-                            <Clock size={20} className="text-cta" />
-                            <input type="datetime-local" className="bg-transparent border-none outline-none font-bold text-sm text-primary w-full cursor-pointer" defaultValue="2026-01-27T18:00" />
-                         </div>
+                      <div className="p-6 rounded-3xl bg-[#FAF9F6] border border-primary/5 group transition-all hover:bg-white hover:border-cta/20">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-primary/30 mb-3 block italic">Trả máy tại Hub</label>
+                        <div className="flex items-center gap-3">
+                            <Calendar size={18} className="text-primary/20 group-hover:text-cta transition-colors" />
+                            <input 
+                              type="date" 
+                              value={endDate}
+                              onChange={(e) => setEndDate(e.target.value)}
+                              className="bg-transparent text-sm font-bold text-primary outline-none cursor-pointer uppercase"
+                            />
+                        </div>
                       </div>
+                  </div>
 
-                      <div className="pt-10 space-y-6">
-                         <div className="flex justify-between items-center text-[10px] font-black text-primary/20 uppercase tracking-[0.3em]">
-                            <span>Rental Cycle</span>
-                            <span className="text-primary">2.5 Days Elite</span>
-                         </div>
-                         <div className="flex justify-between items-center text-2xl font-bold text-primary">
-                            <span className="font-heading italic">Investment</span>
-                            <span className="text-cta font-black">875,000 đ</span>
-                         </div>
+                  <div className="flex justify-between items-end bg-cta/5 p-6 rounded-3xl border border-cta/10">
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-cta mb-1 italic">Tổng tạm tính ({days} ngày)</p>
+                        <p className="text-2xl font-bold text-primary">{totalPrice}</p>
                       </div>
+                      <div className="text-right">
+                        <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Elite Shield Ready</p>
+                      </div>
+                  </div>
 
-                      <button className="luxury-btn-primary w-full flex items-center justify-center gap-5 py-6 mt-6 shadow-luxury-xl rounded-[2.5rem]">
-                         <span className="text-xs">SECURE RESERVATION</span>
-                         <ArrowRight size={20} />
-                      </button>
-                   </form>
+                  <button 
+                    onClick={startBooking}
+                    className="luxury-btn-primary w-full py-6 flex items-center justify-center gap-4 text-xs font-black tracking-[0.4em] shadow-luxury-xl group"
+                  >
+                    BẮT ĐẦU ĐẶT XE
+                    <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
+                  </button>
 
-                   <div className="mt-12 flex items-center gap-4 text-[9px] font-black text-primary/10 uppercase tracking-[0.4em] text-center justify-center">
-                      <ShieldCheck size={18} className="text-cta/40" />
-                      Encrypted Blockchain Verification
-                   </div>
+                  <div className="flex items-center justify-center gap-6 pt-4 text-primary/30">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck size={14} />
+                        <span className="text-[9px] font-bold uppercase tracking-widest">Elite Verified</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock size={14} />
+                        <span className="text-[9px] font-bold uppercase tracking-widest">Hủy miễn phí</span>
+                      </div>
+                  </div>
                 </div>
+              </div>
 
-                {/* Legacy Policy Advisory */}
-                <div className="p-12 rounded-[4rem] bg-primary/5 border border-primary/10 backdrop-blur-xl">
-                   <h4 className="font-heading text-2xl font-bold text-primary mb-8 flex items-center gap-4">
-                      <ShieldAlert size={24} className="text-cta" />
-                      Legacy Covenants
-                   </h4>
-                   <ul className="space-y-6">
-                      {['Official Government Identity Required', '6-Hour Grace Period on Returns', 'Pinnacle Damage Waiver (PDW) Included'].map(t => (
-                        <li key={t} className="flex gap-5 text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] leading-relaxed">
-                           <span className="h-1.5 w-1.5 rounded-full bg-cta mt-1.5 shrink-0" />
-                           {t}
-                        </li>
-                      ))}
-                   </ul>
+              {/* Policy Quick Card */}
+              {/* ... same as before ... */}
+
+              {/* Policy Quick Card */}
+              <div className="glass-card bg-primary text-white p-10 rounded-[3.5rem] shadow-luxury-2xl group overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all duration-700" />
+                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] mb-8 text-cta">Elite Standard</h4>
+                <div className="space-y-8">
+                   {[
+                     { title: "Kiểm định định kỳ", text: "1.000km / lần", icon: <ShieldCheck size={16}/> },
+                     { title: "Hỗ trợ ven biển", text: "24/7 Elite Hub", icon: <Phone size={16}/> },
+                     { title: "Độ mới động cơ", text: "Trên 95%", icon: <AlertCircle size={16}/> }
+                   ].map((p, i) => (
+                     <div key={i} className="flex gap-5 items-start">
+                        <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-cta shrink-0">{p.icon}</div>
+                        <div>
+                            <p className="text-xs font-bold text-white mb-1">{p.title}</p>
+                            <p className="text-[10px] font-medium text-white/40 italic">{p.text}</p>
+                        </div>
+                     </div>
+                   ))}
                 </div>
-             </div>
+              </div>
+            </div>
           </aside>
-
         </div>
       </div>
     </main>

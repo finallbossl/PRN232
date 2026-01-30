@@ -1,127 +1,125 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Lock, User, ArrowRight, Github, Chrome, Compass } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Mail, Lock, User, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export default function RegisterPage() {
   return (
-    <main className="min-h-screen grid lg:grid-cols-2 bg-white">
-      {/* Visual Adventure Side */}
-      <section className="relative hidden lg:flex items-center justify-center bg-primary overflow-hidden">
-        <img 
-          src="https://images.unsplash.com/photo-1519750783826-e2420f4d687f?auto=format&fit=crop&q=80&w=1200" 
-          alt="GoRide Freedom Awaits" 
-          className="absolute inset-0 h-full w-full object-cover opacity-30 transition-transform duration-[10s] hover:scale-110" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent" />
+    <main className="min-h-screen bg-[#FAF9F6] flex items-center justify-center px-6 py-20">
+      <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
         
-        <div className="relative z-10 p-24 max-w-2xl text-center lg:text-left">
-          <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full glass-card border-white/20 mb-10 shadow-luxury-xl">
-             <Compass size={16} className="text-cta" />
-             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cta">Freedom Begins Here</span>
+        {/* Left – Visual & Benefits */}
+        <div className="hidden md:flex flex-col justify-between p-16 bg-primary text-white relative overflow-hidden">
+          <div className="relative z-10">
+            <Link href="/" className="text-2xl font-black tracking-wide">
+              GoRide <span className="text-cta">Elite</span>
+            </Link>
+
+            <h2 className="mt-20 text-4xl font-bold leading-tight">
+              Gia nhập <br /> cộng đồng Elite
+            </h2>
+
+            <div className="mt-12 space-y-6">
+              {[
+                "Giảm 30% cho lần thuê đầu tiên",
+                "Tiếp cận đội xe mới nhất",
+                "Hỗ trợ ưu tiên 24/7",
+              ].map((benefit, i) => (
+                <div key={i} className="flex items-center gap-4 text-white/70">
+                  <div className="h-6 w-6 rounded-full bg-cta/20 flex items-center justify-center text-cta">
+                    <CheckCircle2 size={14} />
+                  </div>
+                  <span className="text-sm font-medium">{benefit}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <h2 className="font-heading text-6xl lg:text-8xl font-black text-white leading-[0.9] tracking-tight mb-10">
-            Gia Nhập <br/>
-            <span className="text-cta italic font-normal">Cộng Đồng Elite</span>
-          </h2>
-          <p className="text-xl font-medium text-white/40 leading-relaxed italic">
-            Mở khóa những hành trình bứt phá và nhận đặc quyền giảm giá 30% cho lần thuê đầu tiên. Hành trình của bạn, tiêu chuẩn của chúng tôi.
+          <p className="relative z-10 text-sm text-white/40 italic">
+            © 2026 GoRide Elite
           </p>
+
+          {/* Decorative element */}
+          <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-cta/5 blur-[80px] rounded-full" />
         </div>
-        
-        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-cta/10 blur-[120px] rounded-full" />
-      </section>
 
-      {/* Elegant Registration Form Side */}
-      <section className="flex items-center justify-center p-12 lg:p-24 bg-surface">
-        <div className="w-full max-w-md">
-          <div className="mb-14">
-            <h1 className="font-heading text-5xl font-bold text-primary mb-6">Tạo Danh Tính <br/>Mới</h1>
-            <p className="text-sm font-medium text-primary/30 tracking-widest uppercase">Start Your Elite Journey</p>
-          </div>
+        {/* Right – Form */}
+        <div className="p-12 md:p-16">
+          <h1 className="text-3xl font-bold text-primary mb-2">
+            Tạo tài khoản mới
+          </h1>
+          <p className="text-primary/50 mb-10">
+            Bắt đầu hành trình của bạn ngay hôm nay
+          </p>
 
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/30 ml-2">Full Name</label>
-              <div className="relative group">
-                <User className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/10 group-focus-within:text-cta transition-all" size={20} />
-                <input 
-                  type="text" 
-                  className="w-full h-16 pl-14 pr-6 rounded-luxury bg-white border border-transparent outline-none transition-all focus:border-cta/20 focus:ring-4 focus:ring-cta/5 font-bold text-primary shadow-soft-sm"
+          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Họ và tên
+              </label>
+              <div className="relative">
+                <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
+                <input
+                  type="text"
                   placeholder="Họ và tên của bạn"
-                  required 
+                  className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
+                  required
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/30 ml-2">Legacy Email</label>
-              <div className="relative group">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/10 group-focus-within:text-cta transition-all" size={20} />
-                <input 
-                  type="email" 
-                  className="w-full h-16 pl-14 pr-6 rounded-luxury bg-white border border-transparent outline-none transition-all focus:border-cta/20 focus:ring-4 focus:ring-cta/5 font-bold text-primary shadow-soft-sm"
-                  placeholder="name@example.com"
-                  required 
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
+                <input
+                  type="email"
+                  placeholder="email@vidu.com"
+                  className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
+                  required
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/30 ml-2">Secret Password</label>
-              <div className="relative group">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/10 group-focus-within:text-cta transition-all" size={20} />
-                <input 
-                  type="password" 
-                  className="w-full h-16 pl-14 pr-6 rounded-luxury bg-white border border-transparent outline-none transition-all focus:border-cta/20 focus:ring-4 focus:ring-cta/5 font-bold text-primary shadow-soft-sm"
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Mật khẩu
+              </label>
+              <div className="relative">
+                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
+                <input
+                  type="password"
                   placeholder="••••••••"
-                  required 
+                  className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
+                  required
                 />
               </div>
             </div>
 
-            <label className="flex items-center gap-4 px-2 cursor-pointer group">
-              <div className="h-5 w-5 rounded-md border border-primary/10 bg-white flex items-center justify-center transition-all group-hover:border-cta">
-                 <div className="h-2 w-2 rounded-sm bg-cta opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <span className="text-xs font-bold text-primary/30 group-hover:text-primary transition-colors">
-                Đồng ý với <a href="#" className="text-cta underline">Điều khoản & Chính sách</a>
-              </span>
-              <input type="checkbox" className="hidden" required />
-            </label>
+            <div className="pt-2">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" className="w-5 h-5 rounded border-primary/10 text-cta focus:ring-cta/30" required />
+                <span className="text-xs text-primary/50 group-hover:text-primary transition-colors">
+                  Tôi đồng ý với <a href="#" className="text-cta font-semibold">Điều khoản & Chính sách</a>
+                </span>
+              </label>
+            </div>
 
-            <button 
-              type="submit" 
-              className="luxury-btn-primary w-full flex items-center justify-center gap-4 py-6 shadow-luxury-xl"
-            >
-               BECOME ELITE MEMBER
-              <ArrowRight size={20} />
+            <button className="w-full h-14 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-cta transition shadow-lg mt-4">
+              Đăng ký ngay <ArrowRight size={18} />
             </button>
           </form>
 
-          <div className="relative my-10">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-primary/5"></div></div>
-            <div className="relative flex justify-center text-[9px] font-black uppercase tracking-[0.2em]"><span className="bg-surface px-6 text-primary/20">Third Party Auth</span></div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <button className="h-14 rounded-luxury bg-white border border-primary/5 flex items-center justify-center gap-4 font-bold text-xs text-primary hover:bg-white transition-all active:scale-95">
-              <Chrome size={18} className="text-red-500" />
-              GOOGLE
-            </button>
-            <button className="h-14 rounded-luxury bg-white border border-primary/5 flex items-center justify-center gap-4 font-bold text-xs text-primary hover:bg-white transition-all active:scale-95">
-              <Github size={18} />
-              GITHUB
-            </button>
-          </div>
-
-          <div className="mt-12 text-center text-[10px] font-black uppercase tracking-widest text-primary/20">
-            Already a member? <Link href="/login" className="text-cta hover:text-primary transition-colors">Login Here</Link>
-          </div>
+          <p className="mt-8 text-sm text-primary/50 text-center">
+            Đã có tài khoản?{' '}
+            <Link href="/login" className="text-cta font-semibold">
+              Đăng nhập
+            </Link>
+          </p>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
