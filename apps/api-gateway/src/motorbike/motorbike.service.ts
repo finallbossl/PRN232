@@ -1,45 +1,86 @@
-import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
-import { ClientGrpc } from '@nestjs/microservices';
-import { firstValueFrom, Observable } from 'rxjs';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateMotorbikeDto, UpdateMotorbikeDto, MotorbikeFilterDto } from '@goride/shared';
 
-interface MotorbikeGrpcService {
-    CreateMotorbike(data: CreateMotorbikeDto): Observable<{ motorbike: any }>;
-    UpdateMotorbike(data: UpdateMotorbikeDto & { id: string }): Observable<{ motorbike: any }>;
-    DeleteMotorbike(data: { id: string }): Observable<{ success: boolean; message: string }>;
-    GetMotorbikeById(data: { id: string }): Observable<{ motorbike: any }>;
-    ListMotorbikes(data: MotorbikeFilterDto): Observable<{ motorbikes: any[]; total: number; page: number; limit: number }>;
-}
-
 @Injectable()
-export class MotorbikeService implements OnModuleInit {
-    private motorbikeGrpcService: MotorbikeGrpcService;
-
-    constructor(
-        @Inject('MOTORBIKE_PACKAGE') private client: ClientGrpc,
-    ) { }
-
-    onModuleInit() {
-        this.motorbikeGrpcService = this.client.getService<MotorbikeGrpcService>('MotorbikeService');
-    }
+export class MotorbikeService {
+    constructor(private prisma: PrismaService) { }
 
     async create(data: CreateMotorbikeDto) {
-        return firstValueFrom(this.motorbikeGrpcService.CreateMotorbike(data));
+        const motorbike = await this.prisma.motorbike.create({
+            data: {
+                ...data,
+                pricePerDay: data.pricePerDay.toString() as any, // Handle Decimal
+            },
+        });
+        return { motorbike };
     }
 
     async update(id: string, data: UpdateMotorbikeDto) {
-        return firstValueFrom(this.motorbikeGrpcService.UpdateMotorbike({ id, ...data }));
+        const motorbike = await this.prisma.motorbike.update({
+            where: { id },
+            data: {
+                ...data,
+                pricePerDay: data.pricePerDay ? data.pricePerDay.toString() as any : undefined,
+            },
+        });
+        return { motorbike };
     }
 
     async delete(id: string) {
-        return firstValueFrom(this.motorbikeGrpcService.DeleteMotorbike({ id }));
+        await this.prisma.motorbike.delete({
+            where: { id },
+        });
+        return { success: true, message: 'Xóa xe thành công' };
     }
 
     async findById(id: string) {
-        return firstValueFrom(this.motorbikeGrpcService.GetMotorbikeById({ id }));
+        const motorbike = await this.prisma.motorbike.findUnique({
+            where: { id },
+        });
+
+        if (!motorbike) {
+            throw new NotFoundException('Không tìm thấy xe');
+        }
+
+        return { motorbike };
     }
 
     async findAll(filters: MotorbikeFilterDto) {
-        return firstValueFrom(this.motorbikeGrpcService.ListMotorbikes(filters));
+        const { page = 1, limit = 10, type, status, minPrice, maxPrice, search } = filters;
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+
+        if (type) where.type = type;
+        if (status) where.status = status;
+        if (minPrice || maxPrice) {
+            where.pricePerDay = {};
+            if (minPrice) where.pricePerDay.gte = minPrice;
+            if (maxPrice) where.pricePerDay.lte = maxPrice;
+        }
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { licensePlate: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        const [motorbikes, total] = await Promise.all([
+            this.prisma.motorbike.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.motorbike.count({ where }),
+        ]);
+
+        return {
+            motorbikes,
+            total,
+            page,
+            limit,
+        };
     }
 }

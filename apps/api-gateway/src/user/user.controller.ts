@@ -39,9 +39,11 @@ export class UserController {
                 message: 'Lấy thông tin cá nhân thành công',
             };
         } catch (error) {
+            const errorMsg = error.details || error.message || 'Không thể lấy thông tin cá nhân';
             return {
                 success: false,
-                error: error.message || 'Không thể lấy thông tin cá nhân',
+                error: errorMsg,
+                message: errorMsg,
             };
         }
     }
@@ -61,9 +63,11 @@ export class UserController {
                 message: 'Lấy thông tin người dùng thành công',
             };
         } catch (error) {
+            const errorMsg = error.details || error.message || 'Không tìm thấy người dùng';
             return {
                 success: false,
-                error: error.message || 'Không tìm thấy người dùng',
+                error: errorMsg,
+                message: errorMsg,
             };
         }
     }
@@ -94,7 +98,7 @@ export class UserController {
             console.error('[UserController] findAll error:', error);
             return {
                 success: false,
-                error: error.message || 'Không thể lấy danh sách người dùng',
+                error: error.details || error.message || 'Không thể lấy danh sách người dùng',
             };
         }
     }
@@ -118,7 +122,7 @@ export class UserController {
         } catch (error) {
             return {
                 success: false,
-                error: error.message || 'Cập nhật thất bại',
+                error: error.details || error.message || 'Cập nhật thất bại',
             };
         }
     }
@@ -140,7 +144,7 @@ export class UserController {
         } catch (error) {
             return {
                 success: false,
-                error: error.message || 'Xóa người dùng thất bại',
+                error: error.details || error.message || 'Xóa người dùng thất bại',
             };
         }
     }

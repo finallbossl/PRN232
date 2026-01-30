@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from '@goride/shared';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter'; // IMPORT LOCAL FILTER
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,8 +13,8 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
 
-  // Standardize error responses
-  app.useGlobalFilters(new HttpExceptionFilter());
+  // Standardize error responses (USE LOCAL FILTER)
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Enable CORS
   app.enableCors({

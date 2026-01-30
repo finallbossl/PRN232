@@ -1,54 +1,68 @@
-import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
-import { ClientGrpc } from '@nestjs/microservices';
-import { firstValueFrom, Observable } from 'rxjs';
-
-/**
- * Interface for User gRPC Service
- */
-interface UserGrpcService {
-    GetUserById(data: { id: string }): Observable<{ user: any }>;
-    UpdateUser(data: { id: string, name?: string, phone?: string, address?: string }): Observable<{ user: any }>;
-    DeleteUser(data: { id: string }): Observable<{ success: boolean, message: string }>;
-    ListUsers(data: { page: number, limit: number, search?: string }): Observable<{ users: any[], total: number, page: number, limit: number }>;
-}
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class UserService implements OnModuleInit {
-    private userGrpcService: UserGrpcService;
+export class UserService {
+    constructor(private prisma: PrismaService) { }
 
-    constructor(
-        @Inject('USER_PACKAGE') private client: ClientGrpc,
-    ) { }
+    async findById(id: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+        });
 
-    onModuleInit() {
-        this.userGrpcService = this.client.getService<UserGrpcService>('UserService');
+        if (!user) {
+            throw new NotFoundException('Người dùng không tồn tại');
+        }
+
+        const { password, ...result } = user;
+        return { user: result };
     }
 
-    /**
-     * Get user by ID
-     */
-    async findById(id: string): Promise<{ user: any }> {
-        return firstValueFrom(this.userGrpcService.GetUserById({ id }));
+    async update(id: string, data: any) {
+        const user = await this.prisma.user.update({
+            where: { id },
+            data,
+        });
+
+        const { password, ...result } = user;
+        return { user: result };
     }
 
-    /**
-     * Update user info
-     */
-    async update(id: string, data: any): Promise<{ user: any }> {
-        return firstValueFrom(this.userGrpcService.UpdateUser({ id, ...data }));
+    async delete(id: string) {
+        await this.prisma.user.delete({
+            where: { id },
+        });
+        return { success: true, message: 'Xóa người dùng thành công' };
     }
 
-    /**
-     * Delete user
-     */
-    async delete(id: string): Promise<{ success: boolean; message: string }> {
-        return firstValueFrom(this.userGrpcService.DeleteUser({ id }));
-    }
+    async list(page: number, limit: number, search?: string) {
+        const skip = (page - 1) * limit;
+        const where = search
+            ? {
+                OR: [
+                    { name: { contains: search, mode: 'insensitive' as any } },
+                    { email: { contains: search, mode: 'insensitive' as any } },
+                ],
+            }
+            : {};
 
-    /**
-     * List users
-     */
-    async list(page: number, limit: number, search?: string): Promise<{ users: any[]; total: number; page: number; limit: number }> {
-        return firstValueFrom(this.userGrpcService.ListUsers({ page, limit, search }));
+        const [users, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.user.count({ where }),
+        ]);
+
+        const usersWithoutPassword = users.map(({ password, ...u }) => u);
+
+        return {
+            users: usersWithoutPassword,
+            total,
+            page,
+            limit,
+        };
     }
 }

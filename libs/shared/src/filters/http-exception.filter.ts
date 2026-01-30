@@ -9,29 +9,44 @@ import { Response } from 'express';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const request = ctx.getRequest<any>();
 
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    // 1. Xác định Status Code
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+    } else if (exception.code === 2 || exception.details) {
+      // Mã lỗi 2 (UNKNOWN) hoặc có details thường là lỗi từ gRPC Microservice
+      status = HttpStatus.BAD_REQUEST;
+    }
 
-    const message =
-      exception instanceof HttpException
-        ? exception.getResponse()
-        : 'Internal server error';
+    // 2. Xác định tin nhắn lỗi (Lấy từ details của gRPC)
+    let message = 'Internal server error';
 
-    const errorResponse = {
+    if (exception.details) {
+      // ĐÂY LÀ GIÁ TRỊ TỪ MICROSERVICE (ví dụ: "Xe đã được thuê")
+      message = exception.details;
+    } else if (exception instanceof HttpException) {
+      const res = exception.getResponse();
+      message = typeof res === 'object' ? (res as any).message || JSON.stringify(res) : res;
+    } else if (exception.message) {
+      message = exception.message;
+    }
+
+    // 3. Log để bạn thấy ở Terminal [0]
+    console.log(`[Filter] Đang trả về lỗi cho Postman: "${message}" (Status: ${status})`);
+
+    // 4. Trả về JSON chuẩn cho Postman
+    return response.status(status).json({
       success: false,
       statusCode: status,
       timestamp: new Date().toISOString(),
-      path: request.url,
-      message: typeof message === 'object' ? (message as any).message || message : message,
-    };
-
-    response.status(status).json(errorResponse);
+      path: request?.url,
+      error: message,
+      message: message, // Gửi cả 2 trường để chắc chắn Postman hiện đúng
+    });
   }
 }
