@@ -20,8 +20,24 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@goride/shared": ["libs/shared/src"],
-      "@goride/shared/*": ["libs/shared/src/*"]
+      "@goride/shared": [
+        "libs/shared/src"
+      ],
+      "@goride/shared/*": [
+        "libs/shared/src/*"
+      ],
+      "@auth/*": [
+        "apps/api-gateway/src/auth/*"
+      ],
+      "@user/*": [
+        "apps/api-gateway/src/user/*"
+      ],
+      "@motorbike/*": [
+        "apps/api-gateway/src/motorbike/*"
+      ],
+      "@rental/*": [
+        "apps/api-gateway/src/rental/*"
+      ]
     }
   },
   "ts-node": {

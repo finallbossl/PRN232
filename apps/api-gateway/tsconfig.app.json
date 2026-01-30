@@ -19,10 +19,29 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@goride/shared": ["../../libs/shared/src"],
-      "@goride/shared/*": ["../../libs/shared/src/*"]
+      "@goride/shared": [
+        "../../libs/shared/src"
+      ],
+      "@goride/shared/*": [
+        "../../libs/shared/src/*"
+      ],
+      "@auth/*": [
+        "src/auth/*"
+      ],
+      "@user/*": [
+        "src/user/*"
+      ],
+      "@motorbike/*": [
+        "src/motorbike/*"
+      ]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test"
+  ]
 }

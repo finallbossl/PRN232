@@ -21,10 +21,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "dev:gateway": "nest start api-gateway --watch",
-    "dev:auth": "nest start auth-service --watch",
     "dev:web-user": "npm run dev -w @goride/web-user",
     "dev:web-manager": "npm run dev -w @goride/web-manager",
-    "dev:be": "concurrently \"npm run dev:gateway\" \"npm run dev:auth\"",
+    "dev:be": "npm run dev:gateway",
     "dev:fe": "concurrently \"npm run dev:web-user\" \"npm run dev:web-manager\"",
     "dev": "concurrently \"npm run dev:be\" \"npm run dev:fe\"",
     "prisma:generate": "prisma generate",
@@ -102,5 +101,8 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }
