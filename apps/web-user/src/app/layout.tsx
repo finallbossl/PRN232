@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { AuthProvider } from '@/context/AuthContext'
 
 export const metadata: Metadata = {
   title: 'GoRide Premium | Elite Motorcycle Journeys & Rentals',
@@ -17,9 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="antialiased selection:bg-cta selection:text-white">
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )

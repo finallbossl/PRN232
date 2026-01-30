@@ -1,108 +1,93 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Lock, ArrowRight, Github, Chrome, ShieldCheck } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Mail, Lock, ArrowRight, Star } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const { login } = useAuth();
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    login();
+    router.push('/');
+  };
   return (
-    <main className="min-h-screen grid lg:grid-cols-2 bg-white">
-      {/* Visual Experience Side */}
-      <section className="relative hidden lg:flex items-center justify-center bg-primary overflow-hidden">
-        <img 
-          src="https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=1200" 
-          alt="GoRide Premium Journey" 
-          className="absolute inset-0 h-full w-full object-cover opacity-30 transition-transform duration-[10s] hover:scale-110" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent" />
+    <main className="min-h-screen bg-[#FAF9F6] flex items-center justify-center px-6">
+      <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
         
-        <div className="relative z-10 p-24 max-w-2xl">
-          <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full glass-card border-white/20 mb-10 shadow-luxury-xl">
-             <ShieldCheck size={16} className="text-cta" />
-             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-cta">Secure Elite Access</span>
+        {/* Left – Visual */}
+        <div className="hidden md:flex flex-col justify-between p-16 bg-primary text-white">
+          <div>
+            <Link href="/" className="text-2xl font-black tracking-wide">
+              GoRide <span className="text-cta">Elite</span>
+            </Link>
+
+            <h2 className="mt-20 text-4xl font-bold leading-tight">
+              Tiếp tục <br /> hành trình của bạn
+            </h2>
+
+            <p className="mt-6 text-white/60 text-lg">
+              Đăng nhập để trải nghiệm những cung đường đẳng cấp.
+            </p>
           </div>
 
-          <h2 className="font-heading text-6xl lg:text-8xl font-black text-white leading-[0.9] tracking-tight mb-10">
-            Khám Phá <br/>
-            <span className="text-cta italic font-normal">Hành Trình Mới</span>
-          </h2>
-          <p className="text-xl font-medium text-white/40 leading-relaxed italic">
-            Đăng nhập để tiếp tục trải nghiệm sự sang trọng và tự do trên mọi cung đường. Đặc quyền dành riêng cho cộng đồng GoRide Elite.
+          <p className="text-sm text-white/40 italic">
+            © 2026 GoRide Elite
           </p>
         </div>
-        
-        {/* Decorative corner */}
-        <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-cta/10 blur-[120px] rounded-full" />
-      </section>
 
-      {/* Elegant Form Side */}
-      <section className="flex items-center justify-center p-12 lg:p-24 bg-surface">
-        <div className="w-full max-w-md">
-          <div className="mb-16">
-            <h1 className="font-heading text-5xl font-bold text-primary mb-6">Chào Mừng <br/>Trở Lại</h1>
-            <p className="text-sm font-medium text-primary/30 tracking-widest uppercase">Elite Member Login</p>
-          </div>
+        {/* Right – Form */}
+        <div className="p-12 md:p-16">
+          <h1 className="text-3xl font-bold text-primary mb-2">
+            Chào mừng trở lại
+          </h1>
+          <p className="text-primary/50 mb-10">
+            Đăng nhập để tiếp tục
+          </p>
 
-          <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-            <div className="space-y-4">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/30 ml-2">Legacy Email</label>
-              <div className="relative group">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/10 group-focus-within:text-cta transition-all" size={20} />
-                <input 
-                  type="email" 
-                  className="w-full h-16 pl-14 pr-6 rounded-luxury bg-white border border-transparent outline-none transition-all focus:border-cta/20 focus:ring-4 focus:ring-cta/5 font-bold text-primary shadow-soft-sm"
-                  placeholder="name@example.com"
-                  required 
+          <form className="space-y-6" onSubmit={handleLogin}>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
+                <input
+                  type="email"
+                  className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30"
                 />
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center px-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/30">Secret Password</label>
-                <a href="#" className="text-[10px] font-black uppercase tracking-widest text-cta hover:text-primary transition-colors">Recover?</a>
-              </div>
-              <div className="relative group">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-primary/10 group-focus-within:text-cta transition-all" size={20} />
-                <input 
-                  type="password" 
-                  className="w-full h-16 pl-14 pr-6 rounded-luxury bg-white border border-transparent outline-none transition-all focus:border-cta/20 focus:ring-4 focus:ring-cta/5 font-bold text-primary shadow-soft-sm"
-                  placeholder="••••••••"
-                  required 
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Mật khẩu
+              </label>
+              <div className="relative">
+                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
+                <input
+                  type="password"
+                  className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30"
                 />
               </div>
             </div>
 
-            <button 
-              type="submit" 
-              className="luxury-btn-primary w-full flex items-center justify-center gap-4 py-6 shadow-luxury-xl"
-            >
-              ACCÉSS ACCOUNT
-              <ArrowRight size={20} />
+            <button className="w-full h-14 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-cta transition">
+              Đăng nhập <ArrowRight size={18} />
             </button>
           </form>
 
-          <div className="relative my-12">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-primary/5"></div></div>
-            <div className="relative flex justify-center text-[9px] font-black uppercase tracking-[0.3em]"><span className="bg-surface px-6 text-primary/20">Elite Gateway</span></div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <button className="h-14 rounded-luxury bg-white border border-primary/5 flex items-center justify-center gap-4 font-bold text-xs text-primary hover:bg-white hover:shadow-soft-lg transition-all active:scale-95">
-              <Chrome size={18} className="text-red-500" />
-              GOOGLE
-            </button>
-            <button className="h-14 rounded-luxury bg-white border border-primary/5 flex items-center justify-center gap-4 font-bold text-xs text-primary hover:bg-white hover:shadow-soft-lg transition-all active:scale-95">
-              <Github size={18} />
-              GITHUB
-            </button>
-          </div>
-
-          <div className="mt-16 text-center text-[10px] font-black uppercase tracking-widest text-primary/20">
-            New to the community? <Link href="/register" className="text-cta hover:text-primary transition-colors">Register Now</Link>
-          </div>
+          <p className="mt-8 text-sm text-primary/50 text-center">
+            Chưa có tài khoản?{' '}
+            <Link href="/register" className="text-cta font-semibold">
+              Đăng ký
+            </Link>
+          </p>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
