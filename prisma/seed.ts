@@ -12,6 +12,8 @@ async function main() {
     await prisma.payment.deleteMany();
     await prisma.rental.deleteMany();
     await prisma.motorbike.deleteMany();
+    await prisma.blog.deleteMany();
+    await prisma.promotion.deleteMany();
     await prisma.user.deleteMany();
 
     // 2. Create Users
@@ -107,7 +109,51 @@ async function main() {
         await prisma.motorbike.create({ data: motorbike });
     }
 
+    // 4. Create Blogs
+    const blogs = [
+        {
+            tag: 'Kinh nghiệm',
+            title: 'Top 10 cung đường ven biển đẹp nhất Việt Nam bằng xe máy',
+            description: 'Khám phá những hành trình đầy mê hoặc từ Bắc chí Nam cùng bạn bè...',
+            content: 'Nội dung chi tiết về các cung đường ven biển như Phan Thiết - Mũi Né, Đèo Lương Sơn - Đại Lãnh...',
+            image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957',
+        },
+        {
+            tag: 'Cẩm nang',
+            title: 'Bí quyết bỏ túi khi thuê xe máy tại Quy Nhơn an toàn nhất',
+            description: 'Những lưu ý quan trọng về giấy tờ và kiểm tra xe trước khi nhận...',
+            content: 'Khi thuê xe tại Quy Nhơn, bạn cần kiểm tra lốp xe, phanh và giấy tờ xe đầy đủ...',
+            image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8df0',
+        },
+    ];
+
+    for (const blog of blogs) {
+        await prisma.blog.create({ data: blog });
+    }
+
+    // 5. Create Promotions
+    const promotions = [
+        {
+            badge: '20% OFF',
+            title: 'Chào bạn mới',
+            description: 'Giảm ngay 20% cho chuyến đi đầu tiên',
+            image: 'https://images.unsplash.com/photo-1616634375264-2d2e17736a36',
+        },
+        {
+            badge: '15% OFF',
+            title: 'Cuối tuần rực rỡ',
+            description: 'Thuê xe cuối tuần, nhận ưu đãi hấp dẫn',
+            image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8df0',
+        },
+    ];
+
+    for (const promo of promotions) {
+        await prisma.promotion.create({ data: promo });
+    }
+
     console.log('Motorbikes created:', motorbikes.length);
+    console.log('Blogs created:', blogs.length);
+    console.log('Promotions created:', promotions.length);
     console.log('Seed completed successfully!');
 }
 

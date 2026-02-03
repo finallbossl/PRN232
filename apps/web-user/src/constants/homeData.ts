@@ -22,6 +22,20 @@ export const promoData = [
     description: 'Ưu đãi từ đối tác ngân hàng',
     image: 'https://images.unsplash.com/photo-1554224155-169641357599?auto=format&fit=crop&q=80&w=800',
   },
+  {
+    id: 4,
+    badge: '50k OFF',
+    title: 'Thuê dài ngày',
+    description: 'Giảm ngay 50k cho đơn thuê từ 3 ngày trở lên',
+    image: 'https://images.unsplash.com/photo-1455644114178-1d25b1be60ee?auto=format&fit=crop&q=80&w=800',
+  },
+  {
+    id: 5,
+    badge: 'VIP',
+    title: 'Thành viên thân thiết',
+    description: 'Tích điểm đổi quà và hưởng ưu đãi dành riêng cho VIP',
+    image: 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?auto=format&fit=crop&q=80&w=800',
+  },
 ];
 
 export const featuredBikes = [
@@ -198,5 +212,19 @@ export const blogPosts = [
     title: 'Chụp ảnh du lịch đẹp với xe máy - Tips từ chuyên gia',
     description: 'Góc chụp, ánh sáng và cách tạo dáng để có những bức ảnh ấn tượng...',
     image: 'https://images.unsplash.com/photo-1519750783826-e2420f4d687f?auto=format&fit=crop&q=80&w=800',
+  },
+  {
+    id: 9,
+    tag: 'Ẩm thực',
+    title: 'Top 5 món ăn phải thử khi đi phượt các tỉnh miền núi phía Bắc',
+    description: 'Từ thắng cố đến lợn bản, những hương vị đặc trưng không thể quên...',
+    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=800',
+  },
+  {
+    id: 10,
+    tag: 'Bảo dưỡng',
+    title: '5 bước tự kiểm tra xe máy trước mỗi chuyến đi xa',
+    description: 'Đảm bảo an toàn tuyệt đối với những bước kiểm tra đơn giản tại nhà...',
+    image: 'https://images.unsplash.com/photo-1485965120184-e220f728d63c?auto=format&fit=crop&q=80&w=800',
   },
 ];

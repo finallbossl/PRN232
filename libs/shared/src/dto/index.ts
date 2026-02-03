@@ -7,28 +7,17 @@ export * from './motorbike.dto';
 // Rental DTOs
 export * from './rental.dto';
 
-// Payment DTOs
-export interface CreatePaymentDto {
-  rentalId: string;
-  method: string;
-  transactionId?: string;
-  notes?: string;
-}
+// Blog DTOs
+export * from './blog.dto';
 
-export interface UpdatePaymentStatusDto {
-  status: string;
-  transactionDate?: string;
-}
+// Promotion DTOs
+export * from './promotion.dto';
+
+// Payment DTOs
+export * from './payment.dto';
 
 // Review DTOs
-export interface CreateReviewDto {
-  rentalId: string;
-  rating: number; // 1-5
-  comment?: string;
-}
+export * from './review.dto';
 
 // Chatbot DTOs
-export interface ChatMessageDto {
-  message: string;
-  userId?: string;
-}
+export * from './chatbot.dto';
