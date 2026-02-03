@@ -216,3 +216,40 @@ model ChatbotConfig {
 
   @@map("chatbot_configs")
 }
+
+// ============================================
+// BLOG & NEWS
+// ============================================
+
+model Blog {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text // Tóm tắt
+  content     String   @db.Text // Nội dung chi tiết
+  image       String   // URL hình ảnh
+  tag         String?  // Gắn thẻ (Kinh nghiệm, Cẩm nang...)
+  author      String?  @default("Admin")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("blogs")
+}
+
+// ============================================
+// PROMOTIONS & OFFERS
+// ============================================
+
+model Promotion {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  image       String   // URL hình ảnh
+  badge       String?  // Ví dụ: "20% OFF", "Mới"
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("promotions")
+}
