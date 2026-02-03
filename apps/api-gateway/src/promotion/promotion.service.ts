@@ -34,13 +34,14 @@ export class PromotionService {
 
     async update(id: string, dto: UpdatePromotionDto) {
         await this.findById(id);
+
+        const updateData: any = { ...dto };
+        if (dto.startDate) updateData.startDate = new Date(dto.startDate);
+        if (dto.endDate) updateData.endDate = new Date(dto.endDate);
+
         const promotion = await this.prisma.promotion.update({
             where: { id },
-            data: {
-                ...dto,
-                startDate: dto.startDate ? new Date(dto.startDate) : undefined,
-                endDate: dto.endDate ? new Date(dto.endDate) : undefined,
-            },
+            data: updateData,
         });
         return { promotion };
     }
