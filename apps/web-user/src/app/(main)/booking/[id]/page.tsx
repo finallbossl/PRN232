@@ -4,12 +4,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useRef, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { motorbikeApi, rentalApi } from '@/services/api';
+import { Motorbike, CreateRentalDto, RentalStatus } from '@goride/shared';
 import {
   Star, MapPin, Calendar, Clock, ShieldCheck,
   Heart, Share2, MessageSquare, ChevronRight, 
   ArrowLeft, User, Phone, FileText, Upload, 
   CreditCard, CheckCircle2, X, AlertCircle, Camera,
-  ChevronDown
+  ChevronDown, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,30 +34,45 @@ function BookingContent() {
   const searchParams = useSearchParams();
   
   // Get initial dates from query params or defaults
-  const initialStart = searchParams.get('start') || "2026-05-12";
-  const initialEnd = searchParams.get('end') || "2026-05-15";
+  const initialStart = searchParams.get('start') || new Date().toISOString().split('T')[0];
+  const initialEnd = searchParams.get('end') || new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0];
+
+  const id = params.id as string;
+  const [bike, setBike] = useState<Motorbike | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Booking State - Dates
   const [startDate, setStartDate] = useState(initialStart);
   const [endDate, setEndDate] = useState(initialEnd);
 
-  // Data for Booking (Mock)
-  const bikeData = {
-    name: "Honda SH 150i ABS",
-    image: "https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=1200",
-    location: "Quy Nhơn Elite Hub",
-    price: "350.000đ/ngày",
-    rating: "5.0",
-    reviews: "324"
-  };
+  useEffect(() => {
+    const fetchBike = async () => {
+      setLoading(true);
+      try {
+        const response = await motorbikeApi.getById(id);
+        if (response.success && response.data) {
+          setBike(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch bike details:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchBike();
+  }, [id]);
 
   const { days, totalPrice, totalPriceRaw } = useMemo(() => {
+    if (!bike) return { days: 1, totalPrice: "0 VNĐ", totalPriceRaw: 0 };
+
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = end.getTime() - start.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const finalDays = diffDays > 0 ? diffDays : 1;
-    const pricePerDay = 350000;
+    const pricePerDay = bike.pricePerDay;
     const total = finalDays * pricePerDay;
     
     return {
@@ -63,7 +80,7 @@ function BookingContent() {
       totalPrice: total.toLocaleString('vi-VN') + " VNĐ",
       totalPriceRaw: total
     };
-  }, [startDate, endDate]);
+  }, [startDate, endDate, bike]);
 
   const [bookingData, setBookingData] = useState({
     fullName: authUser?.name || '',
@@ -86,54 +103,104 @@ function BookingContent() {
     }
   };
 
-  const handleSubmit = () => {
-    setIsSuccess(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleSubmit = async () => {
+    if (!bike || !authUser) return;
+    
+    setSubmitting(true);
+    setError(null);
+    try {
+      const rentalDto: CreateRentalDto = {
+        motorbikeId: bike.id,
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+        pickupLocation: 'Văn phòng trung tâm', // Simplified for now
+        returnLocation: 'Văn phòng trung tâm',
+        notes: `Payment method: ${bookingData.paymentMethod}`,
+        totalPrice: totalPriceRaw,
+        numberOfDays: days
+      };
+
+      const response = await rentalApi.create(rentalDto);
+      if (response.success) {
+        setIsSuccess(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setError(response.message || 'Có lỗi xảy ra khi đặt xe.');
+      }
+    } catch (err: any) {
+      console.error('Booking failed:', err);
+      setError(err.response?.data?.message || 'Không thể kết nối với máy chủ.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (isSuccess) {
-    return (
-      <main className="min-h-screen bg-[#FAF9F6] pt-32 pb-20 px-6 flex items-center justify-center">
-        <div className="max-w-xl w-full text-center space-y-10 animate-in zoom-in-50 duration-700 bg-white p-16 rounded-[4rem] shadow-luxury-2xl border border-primary/5">
-          <div className="relative mx-auto w-40 h-40">
-             <div className="absolute inset-0 bg-emerald-500/10 rounded-[3rem] animate-ping duration-[3000ms]" />
-             <div className="absolute inset-4 bg-emerald-500/20 rounded-[2.5rem] animate-pulse" />
-             <div className="relative h-40 w-40 rounded-[3.5rem] bg-emerald-500 flex items-center justify-center text-white shadow-luxury-emerald-lg animate-bounce">
-                <CheckCircle2 size={70} strokeWidth={2.5} />
-             </div>
-          </div>
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-[#FAF9F6] px-4 py-10 md:py-20">
+      
+      <div className="w-full max-w-md bg-white rounded-[32px] md:rounded-[48px] shadow-soft-lg border border-primary/5 p-5 md:p-14 text-center space-y-8 animate-in zoom-in-50 duration-700">
 
-          <div className="space-y-4">
-             <h3 className="text-5xl font-bold text-primary tracking-tighter">Hành trình sẵn sàng!</h3>
-             <div className="space-y-2">
-                <p className="text-sm font-medium text-primary/40 italic">Mã đặt chỗ đẳng cấp của bạn</p>
-                <div className="inline-flex items-center gap-3 px-8 py-3 bg-primary rounded-full">
-                   <span className="text-xl font-black text-cta uppercase tracking-[0.3em]">#{Math.random().toString(36).substring(7).toUpperCase()}</span>
-                </div>
-             </div>
-             <p className="text-xs font-medium text-primary/30 leading-relaxed max-w-sm mx-auto italic pt-4">
-               Thông tin chi tiết đã được gửi tới email và thông báo trong ứng dụng. Chúng tôi sẽ liên hệ trong ít phút để hoàn tất bàn giao.
-             </p>
-          </div>
+        {/* ICON SUCCESS */}
+        <div className="relative mx-auto w-24 h-24 md:w-36 md:h-36">
+          <div className="absolute inset-0 rounded-[28px] bg-emerald-500/10 animate-ping" />
+          <div className="absolute inset-2 rounded-[24px] bg-emerald-500/20 animate-pulse" />
 
-          <div className="grid md:grid-cols-2 gap-4 pt-10">
-             <Link 
-                href="/my-rentals" 
-                className="h-16 rounded-2xl bg-primary text-white text-[10px] font-black tracking-[0.3em] uppercase flex items-center justify-center gap-4 hover:bg-cta transition-all shadow-luxury-xl"
-             >
-                XEM HÀNH TRÌNH <ChevronRight size={16} />
-             </Link>
-             <Link 
-                href="/cars"
-                className="h-16 rounded-2xl border border-primary/10 text-[10px] font-black text-primary/40 tracking-[0.3em] uppercase hover:border-cta hover:text-cta transition-all flex items-center justify-center"
-             >
-                VỀ TRANG CHỦ
-             </Link>
+          <div className="relative w-full h-full rounded-[28px] md:rounded-[32px] bg-emerald-500 flex items-center justify-center text-white shadow-lg animate-bounce">
+            <CheckCircle2 size={44} className="md:w-[56px] md:h-[56px]" strokeWidth={2.5} />
           </div>
         </div>
-      </main>
-    )
-  }
+
+        {/* TEXT CONTENT */}
+        <div className="space-y-4">
+
+          <h3 className="text-[15px] md:text-3xl font-black text-primary leading-tight tracking-tight">
+            Hành trình sẵn sàng!
+          </h3>
+
+          <div className="space-y-2">
+            <p className="text-[10px] md:text-xs text-primary/40 italic font-medium">
+              Mã đặt chỗ của bạn
+            </p>
+
+            {/* BOOKING CODE */}
+            <div className="flex justify-center">
+              <div className="bg-primary text-white px-5 md:px-8 py-2 md:py-3 rounded-full font-black tracking-[0.2em] text-[11px] md:text-lg whitespace-nowrap shadow-luxury-sm">
+                #{id.substring(0, 4).toUpperCase()}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[10px] md:text-xs text-primary/30 max-w-[220px] md:max-w-xs mx-auto leading-relaxed pt-1 italic">
+            Thông tin chi tiết đã được gửi qua email. Chúng tôi sẽ liên hệ sớm nhất.
+          </p>
+
+        </div>
+
+        {/* ACTION BUTTONS */}
+        <div className="grid gap-2.5 md:grid-cols-2 pt-2">
+
+          <Link
+            href="/my-rentals"
+            className="h-11 md:h-14 flex items-center justify-center gap-2 rounded-xl bg-primary text-white text-[10px] md:text-xs font-bold uppercase tracking-wider hover:bg-cta transition shadow-soft-md px-4"
+          >
+            <span className="truncate">Xem hành trình</span>
+            <ChevronRight size={14} className="flex-shrink-0" />
+          </Link>
+
+          <Link
+            href="/cars"
+            className="h-11 md:h-14 flex items-center justify-center rounded-xl border border-primary/10 text-primary text-[10px] md:text-xs font-bold uppercase tracking-wider hover:border-cta hover:text-cta transition px-4"
+          >
+            Về trang chủ
+          </Link>
+
+        </div>
+
+      </div>
+    </main>
+  );
+}
 
   return (
     <main className="min-h-screen bg-[#FAF9F6] pt-32 pb-20 px-6">
@@ -311,24 +378,30 @@ function BookingContent() {
           {/* RIGHT: Order Summary Sticky */}
           <aside className="lg:col-span-5 sticky top-10">
              <div className="glass-card bg-white rounded-[3.5rem] border border-primary/5 shadow-luxury-2xl overflow-hidden">
-                {/* Bike Summary Hero */}
-                <div className="relative h-64 overflow-hidden">
-                   <img src={bikeData.image} className="w-full h-full object-cover" />
-                   <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent" />
-                   <div className="absolute bottom-6 left-8 right-8 flex items-end justify-between">
-                      <div>
-                         <h4 className="text-white text-3xl font-bold tracking-tighter leading-tight">{bikeData.name}</h4>
-                         <div className="flex items-center gap-3 text-white/60 text-xs font-bold mt-1">
-                            <span className="flex items-center gap-1 text-cta"><Star size={14} fill="currentColor" /> {bikeData.rating}</span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1"><MapPin size={14} /> {bikeData.location}</span>
-                         </div>
-                      </div>
-                      <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white">
-                         <ShieldCheck size={20} />
-                      </div>
-                   </div>
-                </div>
+                 {/* Bike Summary Hero */}
+                 <div className="relative h-64 overflow-hidden bg-primary/5 flex items-center justify-center">
+                    {loading ? (
+                      <Loader2 size={40} className="text-cta animate-spin" />
+                    ) : (
+                      <>
+                        <img src={bike?.images[0] || "https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=1200"} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent" />
+                        <div className="absolute bottom-6 left-8 right-8 flex items-end justify-between text-white">
+                           <div>
+                              <h4 className="text-2xl font-bold tracking-tighter leading-tight">{bike?.name}</h4>
+                              <div className="flex items-center gap-3 text-white/60 text-[10px] font-bold mt-1">
+                                 <span className="flex items-center gap-1 text-cta"><Star size={12} fill="currentColor" /> 4.8</span>
+                                 <span>•</span>
+                                 <span className="flex items-center gap-1"><MapPin size={12} /> Quy Nhơn Hub</span>
+                              </div>
+                           </div>
+                           <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+                              <ShieldCheck size={18} />
+                           </div>
+                        </div>
+                      </>
+                    )}
+                 </div>
 
                 {/* Itinerary Details */}
                 <div className="p-10 md:p-12 space-y-10">
@@ -397,14 +470,27 @@ function BookingContent() {
                       </div>
                    </div>
 
-                   <button 
-                    disabled={!bookingData.fullName || !bookingData.documentImage}
-                    onClick={handleSubmit}
-                    className="luxury-btn-primary w-full py-7 flex items-center justify-center gap-4 text-xs font-black tracking-[0.4em] shadow-luxury-2xl group disabled:opacity-50 disabled:grayscale transition-all"
-                   >
-                     XÁC NHẬN ĐẶT XE NGAY
-                     <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
-                   </button>
+                    {error && (
+                      <div className="p-4 rounded-2xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-500 text-xs font-bold italic">
+                        <AlertCircle size={16} />
+                        {error}
+                      </div>
+                    )}
+
+                    <button 
+                     disabled={!bookingData.fullName || !bookingData.documentImage || submitting || loading}
+                     onClick={handleSubmit}
+                     className="luxury-btn-primary w-full py-7 flex items-center justify-center gap-4 text-xs font-black tracking-[0.4em] shadow-luxury-2xl group disabled:opacity-50 disabled:grayscale transition-all"
+                    >
+                      {submitting ? (
+                        <Loader2 className="animate-spin" size={18} />
+                      ) : (
+                        <>
+                          XÁC NHẬN ĐẶT XE NGAY
+                          <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
+                        </>
+                      )}
+                    </button>
                    
                    <p className="text-center text-[10px] font-black text-primary/20 uppercase tracking-[0.3em] italic">
                      Bằng việc đặt xe, bạn đồng ý với <span className="text-cta">Điều khoản Elite</span> của chúng tôi.

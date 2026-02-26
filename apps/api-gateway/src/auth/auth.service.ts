@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, LoginDto, AuthResponse, JwtPayload, UserRole } from '@goride/shared';
 
@@ -48,6 +48,7 @@ export class AuthService {
       const accessToken = await this.generateAccessToken(user);
       const refreshToken = await this.generateRefreshToken(user);
 
+      console.log(`User registered successfully: ${user.email} (ID: ${user.id})`);
       return {
         success: true,
         message: 'Đăng ký tài khoản thành công',
@@ -63,7 +64,7 @@ export class AuthService {
         },
       };
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Registration error details:', error);
       throw new InternalServerErrorException('Đã xảy ra lỗi trong quá trình đăng ký');
     }
   }
@@ -73,6 +74,7 @@ export class AuthService {
    */
   async login(loginDto: LoginDto): Promise<AuthResponse> {
     const { email, password } = loginDto;
+    console.log(`Login attempt for: ${email}`);
 
     // Find user
     const user = await this.prisma.user.findUnique({
@@ -80,6 +82,7 @@ export class AuthService {
     });
 
     if (!user) {
+      console.warn(`Login failed: User not found (${email})`);
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
     }
 
@@ -87,8 +90,11 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
+      console.warn(`Login failed: Invalid password for ${email}`);
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
     }
+
+    console.log(`Login successful: ${email}`);
 
     // Generate tokens
     const accessToken = await this.generateAccessToken(user);

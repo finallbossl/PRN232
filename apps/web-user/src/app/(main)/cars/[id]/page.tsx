@@ -1,23 +1,47 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { motorbikeApi } from '@/services/api';
+import { Motorbike, MotorbikeType } from '@goride/shared';
 import {
   Star, MapPin, Calendar, Clock, ShieldCheck,
   Heart, Share2, MessageSquare, ChevronRight, 
   ArrowLeft, User, Phone, FileText, Upload, 
-  CreditCard, CheckCircle2, X, AlertCircle, Camera
+  CreditCard, CheckCircle2, X, AlertCircle, Camera, Loader2
 } from 'lucide-react';
+
 export default function CarDetailPage() {
   const { isLoggedIn, user: authUser } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const id = params.id as string;
+
+  const [bike, setBike] = useState<Motorbike | null>(null);
+  const [loading, setLoading] = useState(true);
   
   // Booking State - Dates
-  const [startDate, setStartDate] = useState("2026-05-12");
-  const [endDate, setEndDate] = useState("2026-05-15");
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]);
+
+  useEffect(() => {
+    const fetchBike = async () => {
+      setLoading(true);
+      try {
+        const response = await motorbikeApi.getById(id);
+        if (response.success && response.data) {
+          setBike(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch bike details:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchBike();
+  }, [id]);
 
   const { days, totalPrice, totalPriceRaw } = useMemo(() => {
     const start = new Date(startDate);
@@ -25,7 +49,7 @@ export default function CarDetailPage() {
     const diffTime = end.getTime() - start.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const finalDays = diffDays > 0 ? diffDays : 1;
-    const pricePerDay = 350000;
+    const pricePerDay = bike?.pricePerDay || 0;
     const total = finalDays * pricePerDay;
     
     return {
@@ -33,7 +57,7 @@ export default function CarDetailPage() {
       totalPrice: total.toLocaleString('vi-VN') + " VNĐ",
       totalPriceRaw: total
     };
-  }, [startDate, endDate]);
+  }, [startDate, endDate, bike]);
 
   const startBooking = () => {
     if (!isLoggedIn) {
@@ -41,8 +65,29 @@ export default function CarDetailPage() {
       return;
     }
     // Pass dates via query params
-    router.push(`/booking/${params.id}?start=${startDate}&end=${endDate}`);
+    router.push(`/booking/${id}?start=${startDate}&end=${endDate}`);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#FAF9F6]">
+        <Loader2 className="animate-spin text-cta" size={48} />
+        <p className="text-primary/40 font-bold uppercase tracking-widest text-xs">Đang tải thông tin xe Elite...</p>
+      </div>
+    );
+  }
+
+  if (!bike) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#FAF9F6]">
+        <AlertCircle className="text-cta" size={48} />
+        <p className="text-primary font-bold">Không tìm thấy xe</p>
+        <Link href="/cars" className="text-cta font-semibold underline">Quay lại đội xe</Link>
+      </div>
+    );
+  }
+
+  const bikeTypeLabel = bike.type === MotorbikeType.SCOOTER ? 'Xe Tay Ga' : bike.type === MotorbikeType.MANUAL ? 'Xe Số' : 'Xe Côn Tay';
 
   return (
     <main className="min-h-screen bg-[#FAF9F6] pt-32 pb-20 px-6">
@@ -54,7 +99,7 @@ export default function CarDetailPage() {
             <ChevronRight size={12} />
             <Link href="/cars" className="hover:text-cta transition-colors">Khám phá xe</Link>
             <ChevronRight size={12} />
-            <span className="text-primary/60 italic">Honda SH 150i ABS</span>
+            <span className="text-primary/60 italic">{bike.name}</span>
           </div>
           <div className="flex items-center gap-4">
              <button className="h-12 w-12 rounded-2xl bg-white border border-primary/5 flex items-center justify-center text-primary/40 hover:text-red-500 hover:bg-red-50 transition-all shadow-luxury-sm">
@@ -74,22 +119,24 @@ export default function CarDetailPage() {
             <section className="relative group">
               <div className="aspect-[16/9] rounded-[3.5rem] overflow-hidden shadow-luxury-2xl border border-white/20">
                 <img
-                  src="https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=1200"
+                  src={bike.images[0] || "https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=1200"}
                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                  alt="Honda SH 150i"
+                  alt={bike.name}
                 />
                 <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-primary/40 to-transparent pointer-events-none" />
               </div>
               <div className="absolute bottom-6 right-6 flex gap-3">
-                 {[1, 2, 3].map(i => (
+                 {bike.images.slice(1, 4).map((img: string, i: number) => (
                    <div key={i} className="h-20 w-32 rounded-2xl overflow-hidden border-2 border-white shadow-luxury-lg cursor-pointer hover:scale-105 transition-transform">
-                      <img src={`https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=200&sig=${i}`} className="h-full w-full object-cover" />
+                      <img src={img} className="h-full w-full object-cover" />
                    </div>
                  ))}
-                 <div className="h-20 w-32 rounded-2xl bg-primary/95 flex flex-col items-center justify-center text-white cursor-pointer hover:bg-cta transition-colors">
-                    <span className="text-xl font-bold">+12</span>
-                    <span className="text-[8px] font-black uppercase tracking-widest">Ảnh chi tiết</span>
-                 </div>
+                 {bike.images.length > 4 && (
+                   <div className="h-20 w-32 rounded-2xl bg-primary/95 flex flex-col items-center justify-center text-white cursor-pointer hover:bg-cta transition-colors">
+                      <span className="text-xl font-bold">+{bike.images.length - 4}</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest">Ảnh chi tiết</span>
+                   </div>
+                 )}
               </div>
             </section>
 
@@ -101,8 +148,8 @@ export default function CarDetailPage() {
               </div>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                 <div>
-                   <h1 className="text-5xl md:text-7xl font-bold text-primary tracking-tighter mb-4 leading-none">
-                    Honda <span className="text-cta">SH 150i</span> ABS
+                   <h1 className="text-5xl md:text-7xl font-bold text-primary tracking-tighter mb-4 leading-none lowercase">
+                    {bike.name.split(' ')[0]} <span className="text-cta">{bike.name.split(' ').slice(1).join(' ')}</span>
                    </h1>
                    <div className="flex flex-wrap items-center gap-8 text-primary/40">
                       <div className="flex items-center gap-2">
@@ -116,6 +163,9 @@ export default function CarDetailPage() {
                            <MapPin size={16} />
                          </div>
                          <p className="text-sm font-bold text-primary">Quy Nhơn Elite Hub</p>
+                      </div>
+                      <div className="flex items-center gap-2 font-bold text-cta">
+                         <span className="px-3 py-1 bg-cta/10 rounded-full text-[10px] tracking-widest uppercase">{bikeTypeLabel}</span>
                       </div>
                    </div>
                 </div>
@@ -134,15 +184,15 @@ export default function CarDetailPage() {
                <div className="space-y-6">
                   <h3 className="text-xl font-black text-primary uppercase tracking-widest">Tuyệt tác di chuyển</h3>
                   <p className="text-primary/50 leading-relaxed font-medium">
-                    Honda SH 150i ABS 2026 định nghĩa lại chuẩn mực của dòng xe tay ga hạng sang. Với khối động cơ eSP+ thế mạnh, hệ thống kiểm soát lực kéo HSTC và phanh ABS đôi, mỗi hành trình của bạn tại Quy Nhơn không chỉ là di chuyển, mà là một trải nghiệm phong cách sống thượng lưu.
+                    {bike.description || `${bike.name} định nghĩa lại chuẩn mực của dòng ${bikeTypeLabel.toLowerCase()} hạng sang. Mỗi hành trình của bạn tại Quy Nhơn không chỉ là di chuyển, mà là một trải nghiệm phong cách sống thượng lưu.`}
                   </p>
                </div>
                <div className="grid grid-cols-2 gap-6">
                   {[
-                    { label: "Động cơ", val: "157.1cc eSP+", icon: <Clock size={18}/> },
-                    { label: "Công suất", val: "16.0 HP / 8500", icon: <Star size={18}/> },
-                    { label: "Tiêu thụ", val: "2.2L / 100km", icon: <CreditCard size={18}/> },
-                    { label: "Tiện ích", val: "Smart Key / USB", icon: <ShieldCheck size={18}/> }
+                    { label: "Năm sản xuất", val: bike.year || "2024", icon: <Clock size={18}/> },
+                    { label: "Biển số", val: bike.licensePlate, icon: <Star size={18}/> },
+                    { label: "Dung tích", val: bike.fuelCapacity || "N/A", icon: <CreditCard size={18}/> },
+                    { label: "Động cơ", val: bike.engineSize || "N/A", icon: <ShieldCheck size={18}/> }
                   ].map((item, idx) => (
                     <div key={idx} className="p-5 rounded-3xl bg-white border border-primary/5 flex flex-col gap-4">
                        <div className="h-10 w-10 rounded-xl bg-primary/5 text-cta flex items-center justify-center">
@@ -204,7 +254,7 @@ export default function CarDetailPage() {
               <div className="glass-card bg-white rounded-[3.5rem] border border-primary/5 shadow-luxury-2xl overflow-hidden">
                 <div className="p-10 space-y-8">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-bold text-primary tracking-tighter">350.000đ</span>
+                    <span className="text-5xl font-bold text-primary tracking-tighter">{bike.pricePerDay.toLocaleString('vi-VN')}đ</span>
                     <span className="text-sm text-primary/30 font-black uppercase tracking-widest">/ Ngày</span>
                   </div>
 
@@ -247,7 +297,8 @@ export default function CarDetailPage() {
 
                   <button 
                     onClick={startBooking}
-                    className="luxury-btn-primary w-full py-6 flex items-center justify-center gap-4 text-xs font-black tracking-[0.4em] shadow-luxury-xl group"
+                    className="luxury-btn-primary w-full py-6 flex items-center justify-center gap-4 text-xs font-black tracking-[0.4em] shadow-luxury-xl group disabled:opacity-50"
+                    disabled={!bike}
                   >
                     BẮT ĐẦU ĐẶT XE
                     <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />

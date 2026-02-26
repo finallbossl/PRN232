@@ -10,7 +10,11 @@ export interface User {
   name: string;
   phone?: string;
   address?: string;
+  avatarUrl?: string;
   role: UserRole;
+  membershipTier: string;
+  totalTrips: number;
+  points: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -105,6 +109,41 @@ export interface Review {
   motorbikeId: string;
   rating: number; // 1-5
   comment?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Blog Types
+export interface Blog {
+  id: string;
+  title: string;
+  description?: string;
+  content: string;
+  image: string;
+  tag?: string;
+  author?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export enum DiscountType {
+  PERCENTAGE = 'PERCENTAGE',
+  FIXED_AMOUNT = 'FIXED_AMOUNT',
+}
+
+export interface Promotion {
+  id: string;
+  title: string;
+  description: string;
+  code: string;
+  discountType: DiscountType;
+  discountValue: number;
+  minOrderValue: number;
+  image: string;
+  badge?: string;
+  startDate?: Date;
+  endDate?: Date;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

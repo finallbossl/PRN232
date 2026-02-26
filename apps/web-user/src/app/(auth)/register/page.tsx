@@ -1,9 +1,43 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, User, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { register } = useAuth();
+  const router = useRouter();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+    try {
+      await register({
+        email: formData.email,
+        password: formData.password,
+        name: formData.fullName,
+      });
+      setIsSuccess(true);
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
+    } catch (err: any) {
+      setError(err.message || 'Đăng ký thất bại. Vui lòng thử lại sau.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <main className="min-h-screen bg-[#FAF9F6] flex items-center justify-center px-6 py-20">
       <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
@@ -52,64 +86,99 @@ export default function RegisterPage() {
             Bắt đầu hành trình của bạn ngay hôm nay
           </p>
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Họ và tên
-              </label>
-              <div className="relative">
-                <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
-                <input
-                  type="text"
-                  placeholder="Họ và tên của bạn"
-                  className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
-                  required
-                />
+          <form className="space-y-5" onSubmit={handleRegister}>
+            {isSuccess ? (
+              <div className="text-center py-10">
+                <div className="h-20 w-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 size={40} />
+                </div>
+                <h3 className="text-xl font-bold text-primary mb-2">Đăng ký thành công!</h3>
+                <p className="text-primary/50">Đang chuyển hướng đến trang đăng nhập...</p>
               </div>
-            </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Họ và tên
+                  </label>
+                  <div className="relative">
+                    <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
+                    <input
+                      type="text"
+                      placeholder="Họ và tên của bạn"
+                      className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Email
-              </label>
-              <div className="relative">
-                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
-                <input
-                  type="email"
-                  placeholder="email@vidu.com"
-                  className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
-                  required
-                />
-              </div>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
+                    <input
+                      type="email"
+                      placeholder="email@vidu.com"
+                      className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Mật khẩu
-              </label>
-              <div className="relative">
-                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
-                  required
-                />
-              </div>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Mật khẩu
+                  </label>
+                  <div className="relative">
+                    <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30 outline-none transition-all"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <p className="mt-1 text-[10px] text-primary/40 font-medium">
+                    Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số.
+                  </p>
+                </div>
 
-            <div className="pt-2">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input type="checkbox" className="w-5 h-5 rounded border-primary/10 text-cta focus:ring-cta/30" required />
-                <span className="text-xs text-primary/50 group-hover:text-primary transition-colors">
-                  Tôi đồng ý với <a href="#" className="text-cta font-semibold">Điều khoản & Chính sách</a>
-                </span>
-              </label>
-            </div>
+                <div className="pt-2">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" className="w-5 h-5 rounded border-primary/10 text-cta focus:ring-cta/30" required />
+                    <span className="text-xs text-primary/50 group-hover:text-primary transition-colors">
+                      Tôi đồng ý với <a href="#" className="text-cta font-semibold">Điều khoản & Chính sách</a>
+                    </span>
+                  </label>
+                </div>
 
-            <button className="w-full h-14 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-cta transition shadow-lg mt-4">
-              Đăng ký ngay <ArrowRight size={18} />
-            </button>
+                {error && (
+                  <div className="flex items-center gap-2 text-red-500 bg-red-50 p-4 rounded-xl text-sm">
+                    <AlertCircle size={16} />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <button 
+                  disabled={isLoading}
+                  className="w-full h-14 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-cta transition shadow-lg mt-4 disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <>Đăng ký ngay <ArrowRight size={18} /></>
+                  )}
+                </button>
+              </>
+            )}
           </form>
 
           <p className="mt-8 text-sm text-primary/50 text-center">

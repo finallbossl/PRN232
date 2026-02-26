@@ -1,118 +1,46 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Tag, Calendar, Users, ArrowRight, CheckCircle2, 
-  Gift, Ticket, Sparkles, Clock, ChevronLeft, ChevronRight, Award, Search
+  Gift, Ticket, Sparkles, Clock, ChevronLeft, ChevronRight, Award, Search, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const PROMOTIONS = [
-  {
-    id: 1,
-    title: "Đặc Quyền Chào Mừng",
-    value: "GIẢM 30%",
-    banner: "https://images.unsplash.com/photo-1616634375264-2d2e17736a36?auto=format&fit=crop&q=80&w=800",
-    time: "Dành cho khách hàng mới",
-    audience: "Lần đầu trải nghiệm",
-    status: "Đang diễn ra",
-    type: "Tất cả dòng xe"
-  },
-  {
-    id: 2,
-    title: "Hành Trình Cuối Tuần",
-    value: "GIẢM 100K",
-    banner: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8df0?auto=format&fit=crop&q=80&w=800",
-    time: "Thứ 7 & CN hàng tuần",
-    audience: "Tất cả thành viên",
-    status: "Đang diễn ra",
-    type: "Dòng xe Scooter"
-  },
-  {
-    id: 3,
-    title: "Chuyến Đi Dài Ngày",
-    value: "THƯỞNG 20%",
-    banner: "https://images.unsplash.com/photo-1554672408-730436b60dde?auto=format&fit=crop&q=80&w=800",
-    time: "Áp dụng thuê > 3 ngày",
-    audience: "Người yêu khám phá",
-    status: "Sắp ra mắt",
-    type: "Xe côn tay & Phân phối lớn"
-  },
-  {
-    id: 4,
-    title: "Ưu Đãi Lễ Hội",
-    value: "MUA 1 TẶNG 1",
-    banner: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800",
-    time: "Giai đoạn lễ tết",
-    audience: "Thành viên Kim cương",
-    status: "Đang diễn ra",
-    type: "Sự kiện đặc biệt"
-  },
-  {
-    id: 5,
-    title: "Sinh Nhật Rực Rỡ",
-    value: "GIẢM 50%",
-    banner: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&q=80&w=800",
-    time: "Trong tháng sinh nhật",
-    audience: "Cá nhân",
-    status: "Đang diễn ra",
-    type: "Phần thưởng cá nhân"
-  },
-  {
-    id: 6,
-    title: "Đường Trường Bền Bỉ",
-    value: "KHÔNG GIỚI HẠN",
-    banner: "https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=800",
-    time: "Thuê theo tháng",
-    audience: "Khách hàng thường xuyên",
-    status: "Đang diễn ra",
-    type: "Xe côn tay"
-  },
-  {
-    id: 7,
-    title: "Ưu Đãi Gen Z",
-    value: "GIẢM 50K",
-    banner: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800",
-    time: "Sinh viên dưới 22 tuổi",
-    audience: "Sinh viên",
-    status: "Đang diễn ra",
-    type: "Dòng xe Scooter"
-  },
-  {
-    id: 8,
-    title: "Đặc Quyền Đối Tác",
-    value: "GIÁ ĐẶC BIỆT",
-    banner: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800",
-    time: "Ưu đãi đối tác chiến lược",
-    audience: "Nhân viên đối tác",
-    status: "Sắp ra mắt",
-    type: "Sự kiện đặc biệt"
-  },
-  {
-    id: 9,
-    title: "Cú Đêm Chinh Phục",
-    value: "ĐỒNG GIÁ 80K",
-    banner: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=800",
-    time: "Khung giờ 22h - 6h",
-    audience: "Vận hành đêm",
-    status: "Đang diễn ra",
-    type: "Dòng xe Scooter"
-  }
-];
+import { promotionApi } from '@/services/api';
+import { Promotion } from '@goride/shared';
 
 const ITEMS_PER_PAGE = 6;
 
 export default function PromotionsPage() {
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const response = await promotionApi.getAll();
+        if (response.success && response.data) {
+          setPromotions(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch promotions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPromotions();
+  }, []);
+
   const filteredPromotions = useMemo(() => {
-    return PROMOTIONS.filter(p => 
+    return promotions.filter(p => 
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      p.type.toLowerCase().includes(searchQuery.toLowerCase())
+      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()))
     );
-  }, [searchQuery]);
+  }, [promotions, searchQuery]);
 
   const totalPages = Math.ceil(filteredPromotions.length / ITEMS_PER_PAGE);
   const currentItems = filteredPromotions.slice(
@@ -173,80 +101,94 @@ export default function PromotionsPage() {
           </div>
         </div>
 
-        {/* 3. Luxury Privilege Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-32 md:gap-y-48 lg:gap-y-72">
-          {currentItems.map((p, idx) => (
-            <div key={p.id} className={cn(
-              "group relative flex flex-col transition-all duration-700",
-              idx % 2 === 0 ? "lg:translate-y-16" : "lg:-translate-y-16"
-            )}>
-              <div className="relative aspect-[4/6.8] rounded-[4.5rem] overflow-hidden shadow-luxury-2xl border-[12px] border-white bg-white group-hover:border-cta/20 transition-all duration-700">
-                <img src={p.banner} alt={p.title} className="w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-110" />
-                
-                {/* Modern Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-cta/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
-                {/* Card Header Information */}
-                <div className="absolute top-8 left-8 right-8 flex justify-between items-center">
-                   <div className={cn(
-                     "px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] backdrop-blur-md border border-white/20 shadow-luxury-lg",
-                     p.status === 'Đang diễn ra' ? "bg-cta text-white" : "bg-white/10 text-white/50"
-                   )}>
-                      {p.status}
-                   </div>
-                   <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-cta shadow-luxury-xl">
-                      <Tag size={16} />
-                   </div>
-                </div>
+        {loading ? (
+          <div className="flex justify-center py-40">
+            <Loader2 className="animate-spin text-cta" size={64} />
+          </div>
+        ) : (
+          <>
+            {/* 3. Luxury Privilege Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-32 md:gap-y-48 lg:gap-y-72">
+              {currentItems.map((p, idx) => {
+                const isExpired = p.endDate ? new Date(p.endDate) < new Date() : false;
+                const isActive = p.isActive && !isExpired;
+                const statusLabel = isActive ? 'Đang diễn ra' : isExpired ? 'Đã hết hạn' : 'Tạm dừng';
+                const discountValueStr = p.discountType === 'PERCENTAGE' 
+                  ? `${p.discountValue || 0}%` 
+                  : `${(p.discountValue || 0).toLocaleString()}K`;
 
-                {/* Main Card Information - Maximized Spacing */}
-                <div className="absolute inset-x-0 bottom-0 p-8 lg:p-10 flex flex-col gap-3">
-                   <div className="flex items-center gap-2">
-                      <div className="h-[2px] w-4 bg-cta" />
-                      <span className="text-[9px] font-black uppercase tracking-[0.4em] text-cta italic leading-none">{p.type}</span>
-                   </div>
-                   
-                   <h3 className="font-heading text-2xl lg:text-3xl font-bold text-white leading-tight tracking-tight group-hover:text-cta transition-colors duration-500 drop-shadow-md">
-                     {p.title}
-                   </h3>
-                   
-                   <div className="flex items-baseline gap-2 overflow-hidden text-white drop-shadow-2xl">
-                      <div className="text-4xl lg:text-5xl font-black italic font-heading tracking-tighter group-hover:scale-105 transition-transform duration-700 leading-none">
-                        {p.value.split(' ')[0]}
+                return (
+                  <div key={p.id} className={cn(
+                    "group relative flex flex-col transition-all duration-700",
+                    idx % 2 === 0 ? "lg:translate-y-16" : "lg:-translate-y-16"
+                  )}>
+                    <div className="relative aspect-[4/6.8] rounded-[4.5rem] overflow-hidden shadow-luxury-2xl border-[12px] border-white bg-white group-hover:border-cta/20 transition-all duration-700">
+                      <img src={p.image || "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800"} alt={p.title} className="w-full h-full object-cover transition-transform duration-[8s] group-hover:scale-110" />
+                      
+                      {/* Modern Gradient Overlays */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute inset-0 bg-cta/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      {/* Card Header Information */}
+                      <div className="absolute top-8 left-8 right-8 flex justify-between items-center">
+                         <div className={cn(
+                           "px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] backdrop-blur-md border border-white/20 shadow-luxury-lg",
+                           isActive ? "bg-cta text-white" : "bg-white/10 text-white/50"
+                         )}>
+                            {statusLabel}
+                         </div>
+                         <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-cta shadow-luxury-xl">
+                            <Tag size={16} />
+                         </div>
                       </div>
-                      <div className="text-sm lg:text-base font-black text-cta uppercase tracking-tight">
-                        {p.value.split(' ').slice(1).join(' ')}
-                      </div>
-                   </div>
-                   
-                   <div className="space-y-3 border-t border-white/10 pt-4 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
-                      <div className="flex items-center gap-3 text-white/90">
-                         <Clock size={12} className="text-cta shrink-0" />
-                         <span className="text-[10px] font-bold tracking-wide">{p.time}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-white/90">
-                         <Users size={12} className="text-cta shrink-0" />
-                         <span className="text-[10px] font-bold tracking-wide">{p.audience}</span>
-                      </div>
-                   </div>
 
-                   <div className="mt-2">
-                     {p.status === 'Đang diễn ra' ? (
-                       <Link href="/cars" className="block luxury-btn-primary py-4 text-[10px] font-black tracking-[0.3em] text-center shadow-luxury-2xl rounded-[2rem] bg-white text-primary hover:bg-cta hover:text-white border-none group-hover:scale-[1.02] transition-all">
-                          NHẬN ƯU ĐÃI
-                       </Link>
-                     ) : (
-                       <div className="py-4 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/20 border-2 border-white/10 rounded-[2rem] bg-white/5 backdrop-blur-md">
-                          ĐÃ HẾT HẠN
-                       </div>
-                     )}
-                   </div>
-                </div>
-              </div>
+                      {/* Main Card Information - Maximized Spacing */}
+                      <div className="absolute inset-x-0 bottom-0 p-8 lg:p-10 flex flex-col gap-3">
+                         <div className="flex items-center gap-2">
+                            <div className="h-[2px] w-4 bg-cta" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-cta italic leading-none">{p.code}</span>
+                         </div>
+                         
+                         <h3 className="font-heading text-2xl lg:text-3xl font-bold text-white leading-tight tracking-tight group-hover:text-cta transition-colors duration-500 drop-shadow-md">
+                           {p.title}
+                         </h3>
+                         
+                         <div className="flex items-baseline gap-2 overflow-hidden text-white drop-shadow-2xl">
+                            <div className="text-4xl lg:text-5xl font-black italic font-heading tracking-tighter group-hover:scale-105 transition-transform duration-700 leading-none">
+                              {p.discountType === 'PERCENTAGE' ? `GIẢM ${p.discountValue || 0}%` : `GIẢM ${(p.discountValue || 0).toLocaleString()}K`}
+                            </div>
+                         </div>
+                         
+                         <div className="space-y-3 border-t border-white/10 pt-4 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="flex items-center gap-3 text-white/90">
+                               <Clock size={12} className="text-cta shrink-0" />
+                                <span className="text-[10px] font-bold tracking-wide">Hết hạn: {p.endDate ? new Date(p.endDate).toLocaleDateString('vi-VN') : 'Không thời hạn'}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-white/90">
+                               <Users size={12} className="text-cta shrink-0" />
+                               <span className="text-[10px] font-bold tracking-wide">Tối thiểu: {(p.minOrderValue || 0).toLocaleString()}đ</span>
+                            </div>
+                         </div>
+
+                         <div className="mt-2">
+                           {isActive ? (
+                             <Link href="/cars" className="block luxury-btn-primary py-4 text-[10px] font-black tracking-[0.3em] text-center shadow-luxury-2xl rounded-[2rem] bg-white text-primary hover:bg-cta hover:text-white border-none group-hover:scale-[1.02] transition-all">
+                                NHẬN ƯU ĐÃI
+                             </Link>
+                           ) : (
+                             <div className="py-4 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/20 border-2 border-white/10 rounded-[2rem] bg-white/5 backdrop-blur-md">
+                                {statusLabel.toUpperCase()}
+                             </div>
+                           )}
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
+          </>
+        )}
 
         {/* 4. Artistic Pagination */}
         {totalPages > 1 && (
