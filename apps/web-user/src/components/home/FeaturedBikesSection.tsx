@@ -15,10 +15,10 @@ export default function FeaturedBikesSection() {
   useEffect(() => {
     const fetchBikes = async () => {
       try {
-        const response = await motorbikeApi.getAll({ limit: 4 });
+        const response = await motorbikeApi.getAll();
         if (response.success && response.data) {
           const bikeList = response.data.motorbikes || [];
-          setBikes(bikeList);
+          setBikes(bikeList.slice(0, 3));
         }
       } catch (error) {
         console.error('Failed to fetch motorbikes:', error);
@@ -31,7 +31,8 @@ export default function FeaturedBikesSection() {
   }, []);
 
   return (
-    <section className="bg-white py-20 overflow-hidden">
+    <section className="bg-[#FAF9F6] py-28 overflow-hidden relative">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[#CA8A04]/20 to-transparent" />
       <div className="container">
         <SectionHeader 
           title="Đội Xe Nổi Bật" 
@@ -43,7 +44,7 @@ export default function FeaturedBikesSection() {
             <Loader2 className="animate-spin text-primary" size={40} />
           </div>
         ) : (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {bikes.map((bike: Motorbike) => {
               const bikeTypeLabel = bike.type === 'SCOOTER' ? 'Xe Tay Ga' : bike.type === 'MANUAL' ? 'Xe Số' : 'Xe Côn Tay';
               return (
@@ -52,10 +53,10 @@ export default function FeaturedBikesSection() {
                   id={bike.id}
                   name={bike.name}
                   type={bikeTypeLabel}
-                  price={bike.pricePerDay.toLocaleString('vi-VN') + " đ"}
+                  price={Number(bike.pricePerDay).toLocaleString('vi-VN') + " đ"}
                   rating={4.8}
                   reviews="120+"
-                  image={bike.images[0]}
+                  image={bike.images?.[0] || 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&q=80&w=800'}
                   slug={bike.id}
                 />
               );

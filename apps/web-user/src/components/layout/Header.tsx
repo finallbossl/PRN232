@@ -60,11 +60,11 @@ export default function Header() {
       >
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-luxury bg-gradient-to-br from-primary to-cta text-white shadow-soft-md transition-all duration-300 group-hover:scale-110">
+          <div className="flex h-10 w-10 items-center justify-center rounded-luxury bg-[#1C1917] text-[#CA8A04] shadow-soft-md transition-all duration-300 group-hover:bg-[#CA8A04] group-hover:text-white group-hover:scale-110">
             <CarFront size={20} strokeWidth={2.5} />
           </div>
-          <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-cta bg-clip-text text-transparent">
-            GoRide
+          <span className="text-2xl font-heading font-black tracking-tight text-[#1C1917]">
+            GoRide <span className="text-[#CA8A04] italic">Elite</span>
           </span>
         </Link>
 
