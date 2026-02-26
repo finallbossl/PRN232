@@ -1,12 +1,58 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { featuredBikes } from '@/constants/homeData';
+import { motorbikeApi } from '@/services/api';
+import { Motorbike, MotorbikeType } from '@goride/shared';
 import CarCard from '@/components/common/CarCard';
-import SectionHeader from '@/components/common/SectionHeader';
-import { CheckCircle2, Info, MapPin, Calendar, Clock, Search, SlidersHorizontal, Headset } from 'lucide-react';
+import { CheckCircle2, Info, MapPin, Calendar, Clock, Search, SlidersHorizontal, Headset, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
-export default function CarsPage() {
+import { Suspense } from 'react';
+
+function CarsContent() {
+  const searchParams = useSearchParams();
+  const [bikes, setBikes] = useState<Motorbike[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Filter states
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [priceRange, setPriceRange] = useState<string | null>(null);
+  const [location, setLocation] = useState(searchParams.get('location') || '');
+
+  useEffect(() => {
+    const fetchBikes = async () => {
+      setLoading(true);
+      try {
+        const params: any = {};
+        if (selectedType) params.type = selectedType;
+        
+        const response = await motorbikeApi.getAll(params);
+        if (response.success && response.data) {
+          setBikes(response.data.motorbikes || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch bikes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBikes();
+  }, [selectedType]);
+
+  const filteredBikes = bikes.filter(bike => {
+    if (priceRange) {
+      const price = bike.pricePerDay;
+      if (priceRange === 'under-150' && price >= 150000) return false;
+      if (priceRange === '150-250' && (price < 150000 || price > 250000)) return false;
+      if (priceRange === 'above-250' && price <= 250000) return false;
+    }
+    
+    return true;
+  });
+
   return (
     <main className="bg-background relative lg:pt-0 pt-0">
       {/* Hero */}
@@ -90,10 +136,27 @@ export default function CarsPage() {
                   <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-cta mb-4">Phân Loại</h4>
                     <div className="space-y-3">
-                      {['Xe Tay Ga', 'Xe Số Sport', 'Xe Côn Tay'].map(type => (
-                        <label key={type} className="flex items-center gap-3 cursor-pointer group">
-                          <div className="h-5 w-5 rounded-luxury border border-primary/20 group-hover:border-cta transition-colors" />
-                          <span className="text-sm font-medium text-rich-text/60 group-hover:text-primary transition-colors">{type}</span>
+                      {[
+                        { label: 'Tất Cả', value: null },
+                        { label: 'Xe Tay Ga', value: MotorbikeType.SCOOTER },
+                        { label: 'Xe Số Sport', value: MotorbikeType.MANUAL },
+                        { label: 'Xe Côn Tay', value: MotorbikeType.SEMI_AUTO }
+                      ].map(type => (
+                        <label 
+                          key={type.label} 
+                          className="flex items-center gap-3 cursor-pointer group"
+                          onClick={() => setSelectedType(type.value)}
+                        >
+                          <div className={cn(
+                            "h-5 w-5 rounded-luxury border transition-colors",
+                            selectedType === type.value ? "border-cta bg-cta/10" : "border-primary/20 group-hover:border-cta"
+                          )} />
+                          <span className={cn(
+                            "text-sm font-medium transition-colors",
+                            selectedType === type.value ? "text-primary" : "text-rich-text/60 group-hover:text-primary"
+                          )}>
+                            {type.label}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -104,10 +167,27 @@ export default function CarsPage() {
                   <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-cta mb-4">Mức Giá / Ngày</h4>
                     <div className="space-y-3">
-                      {['Dưới 150k', '150k - 250k', 'Trên 250k'].map(price => (
-                        <label key={price} className="flex items-center gap-3 cursor-pointer group">
-                          <div className="h-5 w-5 rounded-luxury border border-primary/20 group-hover:border-cta transition-colors" />
-                          <span className="text-sm font-medium text-rich-text/60 group-hover:text-primary transition-colors">{price}</span>
+                      {[
+                        { label: 'Tất Cả', value: null },
+                        { label: 'Dưới 150k', value: 'under-150' },
+                        { label: '150k - 250k', value: '150-250' },
+                        { label: 'Trên 250k', value: 'above-250' }
+                      ].map(price => (
+                        <label 
+                          key={price.label} 
+                          className="flex items-center gap-3 cursor-pointer group"
+                          onClick={() => setPriceRange(price.value)}
+                        >
+                          <div className={cn(
+                            "h-5 w-5 rounded-luxury border transition-colors",
+                            priceRange === price.value ? "border-cta bg-cta/10" : "border-primary/20 group-hover:border-cta"
+                          )} />
+                          <span className={cn(
+                            "text-sm font-medium transition-colors",
+                            priceRange === price.value ? "text-primary" : "text-rich-text/60 group-hover:text-primary"
+                          )}>
+                            {price.label}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -129,11 +209,37 @@ export default function CarsPage() {
 
           {/* Main Grid */}
           <div className="lg:col-span-9">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredBikes.map((bike) => (
-                <CarCard key={bike.id} {...bike} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 size={40} className="text-cta animate-spin" />
+                <p className="text-primary/40 font-bold uppercase tracking-widest text-xs">Đang tải đội xe Elite...</p>
+              </div>
+            ) : filteredBikes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredBikes.map((bike) => {
+                  const bikeTypeLabel = bike.type === MotorbikeType.SCOOTER ? 'Xe Tay Ga' : bike.type === MotorbikeType.MANUAL ? 'Xe Số' : 'Xe Côn Tay';
+                  return (
+                    <CarCard 
+                      key={bike.id} 
+                      id={bike.id}
+                      name={bike.name}
+                      type={bikeTypeLabel}
+                      price={bike.pricePerDay.toLocaleString('vi-VN') + 'đ'}
+                      rating={4.8} // Placeholder
+                      reviews="120+" // Placeholder
+                      image={bike.images[0] || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800'}
+                      slug={bike.id}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-white rounded-luxury-lg border border-primary/10">
+                <Search size={48} className="mx-auto text-primary/10 mb-4" />
+                <h3 className="text-xl font-bold text-primary mb-2">Không tìm thấy xe phù hợp</h3>
+                <p className="text-primary/40 italic">Vui lòng thử điều chỉnh bộ lọc của bạn.</p>
+              </div>
+            )}
 
             {/* Policy Cards */}
             <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -181,5 +287,18 @@ export default function CarsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function CarsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center py-20 gap-4 min-h-screen">
+        <Loader2 size={40} className="text-cta animate-spin" />
+        <p className="text-primary/40 font-bold uppercase tracking-widest text-xs">Đang tải...</p>
+      </div>
+    }>
+      <CarsContent />
+    </Suspense>
   );
 }

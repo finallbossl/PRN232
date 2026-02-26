@@ -188,7 +188,7 @@ export default function Header() {
                     "h-10 w-10 rounded-full overflow-hidden border-2 shadow-soft-md transition-all",
                     isAccountOpen ? "border-cta ring-4 ring-cta/10" : "border-white group-hover:border-cta"
                   )}>
-                    <img src={user?.avatar} alt="User" className="h-full w-full object-cover" />
+                    <img src={user?.avatarUrl || 'https://i.pravatar.cc/100?img=12'} alt="User" className="h-full w-full object-cover" />
                   </div>
                   <div className="hidden lg:block text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest text-primary/30 leading-none mb-1">Elite Member</p>
@@ -204,7 +204,7 @@ export default function Header() {
                   >
                     <div className="p-8 pb-6 border-b border-primary/5 bg-primary/5 text-center">
                        <div className="h-20 w-20 rounded-[2rem] overflow-hidden border-4 border-white shadow-luxury-lg mx-auto mb-4">
-                          <img src={user?.avatar} alt="User Large" className="h-full w-full object-cover" />
+                          <img src={user?.avatarUrl || 'https://i.pravatar.cc/100?img=12'} alt="User Large" className="h-full w-full object-cover" />
                        </div>
                        <h3 className="text-lg font-black text-primary uppercase tracking-tight">{user?.name}</h3>
                        <p className="text-[10px] font-black text-cta uppercase tracking-[0.3em] mt-1 italic">Elite Concierge User</p>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Star, ShieldCheck, ArrowRight } from 'lucide-react';
 
 interface CarCardProps {
-  id: number;
+  id: string | number;
   name: string;
   type: string;
   price: string;

@@ -4,23 +4,31 @@ import { RentalStatus } from '../types';
 export class CreateRentalDto {
     @IsString({ message: 'ID xe máy phải là chuỗi ký tự' })
     @IsNotEmpty({ message: 'ID xe máy không được để trống' })
-    motorbikeId: string;
+    motorbikeId!: string;
 
     @IsDateString({}, { message: 'Ngày bắt đầu không hợp lệ' })
     @IsNotEmpty({ message: 'Ngày bắt đầu không được để trống' })
-    startDate: string;
+    startDate!: string;
 
     @IsDateString({}, { message: 'Ngày kết thúc không hợp lệ' })
     @IsNotEmpty({ message: 'Ngày kết thúc không được để trống' })
-    endDate: string;
+    endDate!: string;
 
     @IsString({ message: 'Địa điểm nhận xe phải là chuỗi ký tự' })
     @IsNotEmpty({ message: 'Địa điểm nhận xe không được để trống' })
-    pickupLocation: string;
+    pickupLocation!: string;
 
     @IsString({ message: 'Địa điểm trả xe phải là chuỗi ký tự' })
     @IsNotEmpty({ message: 'Địa điểm trả xe không được để trống' })
-    returnLocation: string;
+    returnLocation! : string;
+
+    @IsNumber({}, { message: 'Tổng giá phải là một số' })
+    @IsOptional()
+    totalPrice?: number;
+
+    @IsNumber({}, { message: 'Số ngày phải là một số' })
+    @IsOptional()
+    numberOfDays?: number;
 
     @IsString({ message: 'Ghi chú phải là chuỗi ký tự' })
     @IsOptional()
@@ -30,7 +38,7 @@ export class CreateRentalDto {
 export class UpdateRentalStatusDto {
     @IsEnum(RentalStatus, { message: 'Trạng thái đơn thuê không hợp lệ' })
     @IsNotEmpty({ message: 'Trạng thái không được để trống' })
-    status: RentalStatus;
+    status!: RentalStatus;
 }
 
 export class RentalFilterDto {

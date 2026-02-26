@@ -18,16 +18,16 @@ export class CreateMotorbikeDto {
     @IsString()
     @IsNotEmpty({ message: 'Tên xe không được để trống' })
     @MaxLength(100, { message: 'Tên xe không được vượt quá 100 ký tự' })
-    name: string;
+    name!: string;
 
     @IsEnum(MotorbikeType, { message: 'Loại xe không hợp lệ (MANUAL, SCOOTER, SEMI_AUTO)' })
     @IsNotEmpty({ message: 'Loại xe không được để trống' })
-    type: MotorbikeType;
+    type!: MotorbikeType;
 
     @IsNumber({}, { message: 'Giá thuê phải là một số' })
     @Min(0, { message: 'Giá thuê không được nhỏ hơn 0' })
     @IsNotEmpty({ message: 'Giá thuê không được để trống' })
-    pricePerDay: number;
+    pricePerDay!: number;
 
     @IsString()
     @IsOptional()
@@ -37,7 +37,7 @@ export class CreateMotorbikeDto {
     @IsString()
     @IsNotEmpty({ message: 'Biển số xe không được để trống' })
     @MaxLength(20, { message: 'Biển số xe không được vượt quá 20 ký tự' })
-    licensePlate: string;
+    licensePlate!: string;
 
     @IsNumber()
     @IsOptional()

@@ -1,16 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-interface User {
-  name: string;
-  avatar: string;
-}
+import { authApi } from '@/services/api';
+import { LoginDto, RegisterDto, User } from '@goride/shared';
 
 interface AuthContextType {
   isLoggedIn: boolean;
   user: User | null;
-  login: () => void;
+  loading: boolean;
+  login: (data: LoginDto) => Promise<void>;
+  register: (data: RegisterDto) => Promise<void>;
   logout: () => void;
 }
 
@@ -19,35 +18,77 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('isLoggedIn') === 'true';
-    if (authStatus) {
-      setIsLoggedIn(true);
-      setUser({
-        name: 'Thanh Tùng Hoàng',
-        avatar: 'https://i.pravatar.cc/100?img=12'
-      });
-    }
+    const checkAuth = async () => {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        try {
+          const response = await authApi.getProfile();
+          if (response.success && response.data) {
+            setIsLoggedIn(true);
+            setUser(response.data);
+          } else {
+            // Token might be invalid or expired
+            logout();
+          }
+        } catch (error) {
+          console.error('Auth verification failed:', error);
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
-  const login = () => {
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
-    setUser({
-      name: 'Thanh Tùng Hoàng',
-      avatar: 'https://i.pravatar.cc/100?img=12'
-    });
+  const login = async (data: LoginDto) => {
+    try {
+      console.log('Login attempt for:', data.email);
+      const response = await authApi.login(data);
+      console.log('Login response received:', response);
+      
+      if (response.success && response.data) {
+        console.log('Saving tokens to localStorage...');
+        localStorage.setItem('access_token', response.data.accessToken);
+        localStorage.setItem('refresh_token', response.data.refreshToken);
+        setIsLoggedIn(true);
+        setUser(response.data.user);
+        console.log('Login state updated successfully');
+      } else {
+        console.warn('Login response unsuccessful:', response);
+        throw new Error(response.message || 'Đăng nhập thất bại');
+      }
+    } catch (error) {
+      console.error('Login error details:', error);
+      throw error;
+    }
+  };
+
+  const register = async (data: RegisterDto) => {
+    try {
+      const response = await authApi.register(data);
+      if (!response.success) {
+        throw new Error(response.message || 'Đăng ký thất bại');
+      }
+    } catch (error) {
+      console.error('Register error:', error);
+      throw error;
+    }
   };
 
   const logout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('isLoggedIn');
     setIsLoggedIn(false);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

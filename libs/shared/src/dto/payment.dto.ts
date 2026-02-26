@@ -3,10 +3,10 @@ import { PaymentMethod } from '../types';
 
 export class CreatePaymentDto {
     @IsString()
-    rentalId: string;
+    rentalId!: string;
 
     @IsEnum(PaymentMethod)
-    method: string;
+    method!: string;
 
     @IsOptional()
     @IsString()
@@ -19,7 +19,7 @@ export class CreatePaymentDto {
 
 export class UpdatePaymentStatusDto {
     @IsString()
-    status: string;
+    status!: string;
 
     @IsOptional()
     @IsString()

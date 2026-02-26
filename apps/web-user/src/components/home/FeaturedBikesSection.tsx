@@ -1,10 +1,35 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import SectionHeader from '@/components/common/SectionHeader';
 import CarCard from '@/components/common/CarCard';
-import { featuredBikes } from '@/constants/homeData';
-import { ArrowRight } from 'lucide-react';
+import { motorbikeApi } from '@/services/api';
+import { Motorbike } from '@goride/shared';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FeaturedBikesSection() {
+  const [bikes, setBikes] = useState<Motorbike[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBikes = async () => {
+      try {
+        const response = await motorbikeApi.getAll({ limit: 4 });
+        if (response.success && response.data) {
+          const bikeList = response.data.motorbikes || [];
+          setBikes(bikeList);
+        }
+      } catch (error) {
+        console.error('Failed to fetch motorbikes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBikes();
+  }, []);
+
   return (
     <section className="bg-white py-20 overflow-hidden">
       <div className="container">
@@ -13,11 +38,35 @@ export default function FeaturedBikesSection() {
           subtitle="Những mẫu xe đời mới nhất, bảo trì định kỳ, sẵn sàng cùng bạn chinh phục mọi hành trình." 
         />
         
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredBikes.map((bike) => (
-            <CarCard key={bike.id} {...bike} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="mt-12 flex justify-center py-20">
+            <Loader2 className="animate-spin text-primary" size={40} />
+          </div>
+        ) : (
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {bikes.map((bike: Motorbike) => {
+              const bikeTypeLabel = bike.type === 'SCOOTER' ? 'Xe Tay Ga' : bike.type === 'MANUAL' ? 'Xe Số' : 'Xe Côn Tay';
+              return (
+                <CarCard 
+                  key={bike.id}
+                  id={bike.id}
+                  name={bike.name}
+                  type={bikeTypeLabel}
+                  price={bike.pricePerDay.toLocaleString('vi-VN') + " đ"}
+                  rating={4.8}
+                  reviews="120+"
+                  image={bike.images[0]}
+                  slug={bike.id}
+                />
+              );
+            })}
+            {bikes.length === 0 && (
+              <div className="col-span-full text-center py-10 text-rich-text/40 font-medium">
+                Chưa có dữ liệu xe.
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="mt-16 flex justify-center">
           <Link href="/cars" className="luxury-btn-outline group flex items-center gap-2 whitespace-nowrap">

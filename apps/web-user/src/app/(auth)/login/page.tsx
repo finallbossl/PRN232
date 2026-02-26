@@ -1,18 +1,31 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, ArrowRight, Star } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { Mail, Lock, ArrowRight, Star, Loader2, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    login();
-    router.push('/');
+    setError(null);
+    setIsLoading(true);
+    try {
+      await login({ email, password });
+      router.push('/');
+    } catch (err: any) {
+      setError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+    } finally {
+      setIsLoading(false);
+    }
   };
   return (
     <main className="min-h-screen bg-[#FAF9F6] flex items-center justify-center px-6">
@@ -57,7 +70,10 @@ export default function LoginPage() {
                 <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30"
+                  required
                 />
               </div>
             </div>
@@ -70,13 +86,30 @@ export default function LoginPage() {
                 <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" />
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full h-14 pl-12 rounded-xl border border-primary/10 focus:ring-2 focus:ring-cta/30"
+                  required
                 />
               </div>
             </div>
 
-            <button className="w-full h-14 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-cta transition">
-              Đăng nhập <ArrowRight size={18} />
+            {error && (
+              <div className="flex items-center gap-2 text-red-500 bg-red-50 p-4 rounded-xl text-sm animate-in fade-in slide-in-from-top-2">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <button 
+              disabled={isLoading}
+              className="w-full h-14 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-cta transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <>Đăng nhập <ArrowRight size={18} /></>
+              )}
             </button>
           </form>
 

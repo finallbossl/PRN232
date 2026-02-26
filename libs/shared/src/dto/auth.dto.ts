@@ -16,12 +16,12 @@ export class RegisterDto {
     @IsNotEmpty({ message: 'Tên không được để trống' })
     @MinLength(2, { message: 'Tên phải có ít nhất 2 ký tự' })
     @MaxLength(100, { message: 'Tên không được vượt quá 100 ký tự' })
-    name: string;
+    name!: string;
 
     @IsEmail({}, { message: 'Email không hợp lệ' })
     @IsNotEmpty({ message: 'Email không được để trống' })
     @MaxLength(255, { message: 'Email không được vượt quá 255 ký tự' })
-    email: string;
+    email!: string;
 
     @IsString()
     @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
@@ -31,7 +31,7 @@ export class RegisterDto {
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
         { message: 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số' }
     )
-    password: string;
+    password!: string;
 
     @IsOptional()
     @IsString()
@@ -53,11 +53,11 @@ export class RegisterDto {
 export class LoginDto {
     @IsEmail({}, { message: 'Email không hợp lệ' })
     @IsNotEmpty({ message: 'Email không được để trống' })
-    email: string;
+    email!: string;
 
     @IsString()
     @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
-    password: string;
+    password!: string;
 }
 
 /**
@@ -95,5 +95,5 @@ export interface JwtPayload {
 export class RefreshTokenDto {
     @IsString()
     @IsNotEmpty({ message: 'Refresh token không được để trống' })
-    refresh_token: string;
+    refresh_token!: string;
 }

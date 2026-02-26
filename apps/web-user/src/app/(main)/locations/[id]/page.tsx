@@ -1,7 +1,7 @@
 'use client';
 
-import '../locations.css';
-import '../../home.css'; // For car-card
+// import '../locations.css';
+// import '../../home.css'; // For car-card
 import Link from 'next/link';
 
 export default function LocationDetailPage() {

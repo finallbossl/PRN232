@@ -2,15 +2,22 @@
 
 import { useState } from 'react';
 import { MapPin, Calendar, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function BookingForm() {
   const [location, setLocation] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ location, pickupDate, returnDate });
+    const params = new URLSearchParams();
+    if (location) params.append('location', location);
+    if (pickupDate) params.append('pickupDate', pickupDate);
+    if (returnDate) params.append('returnDate', returnDate);
+    
+    router.push(`/cars?${params.toString()}`);
   };
 
   return (

@@ -1,8 +1,7 @@
 import { IsString, IsOptional } from 'class-validator';
 
 export class ChatMessageDto {
-    @IsString()
-    message: string;
+    message!: string;
 
     @IsOptional()
     @IsString()
