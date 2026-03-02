@@ -54,6 +54,17 @@ export class RentalService {
                     data: { status: 'RENTED' },
                 });
 
+                // Create initial payment record
+                await tx.payment.create({
+                    data: {
+                        rentalId: newRental.id,
+                        amount: totalPrice,
+                        method: 'BANK_TRANSFER',
+                        status: 'PENDING',
+                        notes: 'Chờ thanh toán qua SePay',
+                    },
+                });
+
                 return newRental;
             });
 
@@ -77,6 +88,7 @@ export class RentalService {
                     },
                 },
                 motorbike: true,
+                payments: true,
             },
         });
 
@@ -110,7 +122,10 @@ export class RentalService {
         const [rentals, total] = await Promise.all([
             this.prisma.rental.findMany({
                 where: { userId },
-                include: { motorbike: true },
+                include: { 
+                    motorbike: true,
+                    payments: true 
+                },
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
@@ -142,6 +157,7 @@ export class RentalService {
                         },
                     },
                     motorbike: true,
+                    payments: true,
                 },
                 skip,
                 take: limit,

@@ -64,7 +64,7 @@ export default function Header() {
             <CarFront size={20} strokeWidth={2.5} />
           </div>
           <span className="text-2xl font-heading font-black tracking-tight text-[#1C1917]">
-            GoRide <span className="text-[#CA8A04] italic">Elite</span>
+            GoRide <span className="text-[#CA8A04] italic">Quy Nhơn</span>
           </span>
         </Link>
 

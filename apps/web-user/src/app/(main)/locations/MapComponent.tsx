@@ -5,12 +5,12 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const locations = [
-  { id: 'da-nang', name: 'GoRide Đà Nẵng', position: [16.0544, 108.2022] as [number, number], bikes: 120 },
-  { id: 'da-lat', name: 'GoRide Đà Lạt', position: [11.9404, 108.4583] as [number, number], bikes: 85 },
-  { id: 'ha-no-i', name: 'GoRide Hà Nội', position: [21.0285, 105.8542] as [number, number], bikes: 200 },
-  { id: 'tphcm', name: 'GoRide TP.HCM', position: [10.8231, 106.6297] as [number, number], bikes: 350 },
-  { id: 'ninh-binh', name: 'GoRide Ninh Bình', position: [20.2526, 105.9745] as [number, number], bikes: 60 },
-  { id: 'hue', name: 'GoRide Huế', position: [16.4637, 107.5909] as [number, number], bikes: 75 },
+  { id: 'quy-nhon-center', name: 'GoRide Trung tâm Quy Nhơn', position: [13.7820, 109.2190] as [number, number], bikes: 180 },
+  { id: 'gieng-tien', name: 'GoRide Ghềnh Ráng', position: [13.7563, 109.2147] as [number, number], bikes: 90 },
+  { id: 'nhon-ly', name: 'GoRide Nhơn Lý', position: [13.8897, 109.2940] as [number, number], bikes: 70 },
+  { id: 'ky-co', name: 'GoRide Kỳ Co', position: [13.8858, 109.3017] as [number, number], bikes: 60 },
+  { id: 'bai-xep', name: 'GoRide Bãi Xép', position: [13.7926, 109.2477] as [number, number], bikes: 65 },
+  { id: 'phuong-mai', name: 'GoRide Bán đảo Phương Mai', position: [13.8475, 109.2376] as [number, number], bikes: 85 }
 ];
 
 export default function MapComponent() {
@@ -29,7 +29,7 @@ export default function MapComponent() {
       });
 
       // 2. Initialize Map
-      mapInstance.current = L.map(mapRef.current).setView([16.0544, 108.2022], 6);
+      mapInstance.current = L.map(mapRef.current).setView([13.7820, 109.2190], 12);
 
       // 3. Add Tile Layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

@@ -4,21 +4,37 @@ import { useAuth } from '@/hooks/useAuth';
 import { 
   User, Mail, Phone, MapPin, Calendar, Award, 
   Settings, ShieldCheck, ChevronRight, LogOut, 
-  Camera, Package, Activity, CreditCard
+  Camera, Package, Activity, CreditCard, Save, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { userApi } from '@/services/api';
 
 export default function ProfilePage() {
-  const { user, isLoggedIn, loading, logout } = useAuth();
+  const { user, isLoggedIn, loading, logout, updateUser } = useAuth();
   const router = useRouter();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    address: ''
+  });
 
   useEffect(() => {
     if (!loading && !isLoggedIn) {
       router.push('/login');
     }
-  }, [isLoggedIn, loading, router]);
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        phone: user.phone || '',
+        address: user.address || ''
+      });
+    }
+  }, [isLoggedIn, loading, router, user]);
 
   if (loading || !isLoggedIn || !user) {
     return (
@@ -28,10 +44,39 @@ export default function ProfilePage() {
     );
   }
 
+  const handleEditToggle = () => {
+    if (isEditing) {
+      // Revert changes if canceling
+      setFormData({
+        name: user.name || '',
+        phone: user.phone || '',
+        address: user.address || ''
+      });
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      const response = await userApi.updateProfile(user.id, formData);
+      if (response.success) {
+        updateUser(formData);
+        setIsEditing(false);
+      } else {
+        alert(response.message || 'Cập nhật thất bại');
+      }
+    } catch (error: any) {
+      alert(error.message || 'Có lỗi xảy ra khi cập nhật');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const userStats = [
-    { label: 'Chuyến đi', value: user.totalTrips.toString(), icon: Activity, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { label: 'Điểm thưởng', value: user.points.toLocaleString(), icon: Award, color: 'text-amber-500', bg: 'bg-amber-50' },
-    { label: 'Hạng thẻ', value: `Elite ${user.membershipTier}`, icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { label: 'Chuyến đi', value: (user.totalTrips ?? 0).toString(), icon: Activity, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: 'Điểm thưởng', value: (user.points ?? 0).toLocaleString(), icon: Award, color: 'text-amber-500', bg: 'bg-amber-50' },
+    { label: 'Hạng thẻ', value: `Elite ${user.membershipTier ?? 'Bronze'}`, icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-50' },
   ];
 
   return (
@@ -127,7 +172,33 @@ export default function ProfilePage() {
                   <Settings className="text-cta" size={24} />
                   Thông tin chi tiết
                 </h3>
-                <button className="text-cta text-xs font-bold hover:underline">Chỉnh sửa</button>
+                {!isEditing ? (
+                  <button 
+                    onClick={handleEditToggle}
+                    className="text-cta text-xs font-bold hover:underline"
+                  >
+                    Chỉnh sửa
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className="flex items-center gap-2 bg-cta text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-cta/90 transition-all disabled:opacity-50"
+                    >
+                      <Save size={14} />
+                      {isSaving ? 'Đang lưu...' : 'Lưu'}
+                    </button>
+                    <button 
+                      onClick={handleEditToggle}
+                      disabled={isSaving}
+                      className="flex items-center gap-2 bg-surface text-primary/60 px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary/5 transition-all disabled:opacity-50"
+                    >
+                      <X size={14} />
+                      Hủy
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -136,41 +207,78 @@ export default function ProfilePage() {
                     <p className="text-[11px] font-bold text-primary/30 uppercase tracking-widest mb-2 flex items-center gap-2">
                        Họ và tên
                     </p>
-                    <div className="p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary group-focus-within:border-cta transition-colors">
-                      {user.name}
-                    </div>
+                    {isEditing ? (
+                      <input 
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary focus:border-cta focus:bg-white outline-none transition-all"
+                        placeholder="Nhập họ và tên"
+                      />
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary transition-colors">
+                        {user.name}
+                      </div>
+                    )}
                   </div>
 
                   <div className="group">
-                    <p className="text-[11px] font-bold text-primary/30 uppercase tracking-widest mb-2">Địa chỉ hiện tại</p>
-                    <div className="p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary flex items-start gap-3">
-                      <MapPin size={18} className="text-primary/20 shrink-0 mt-0.5" />
-                      <span>{user.address || 'Chưa cung cấp địa chỉ'}</span>
-                    </div>
+                    <p className="text-[11px] font-bold text-primary/30 uppercase tracking-widest mb-2 flex items-center gap-2">
+                       Số điện thoại
+                    </p>
+                    {isEditing ? (
+                      <input 
+                        type="text"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary focus:border-cta focus:bg-white outline-none transition-all"
+                        placeholder="Nhập số điện thoại"
+                      />
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary transition-colors">
+                        {user.phone || 'Chưa cập nhật'}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-6">
                   <div className="group">
-                    <p className="text-[11px] font-bold text-primary/30 uppercase tracking-widest mb-2">Ngày gia nhập</p>
-                    <div className="p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary flex items-center gap-3">
-                      <Calendar size={18} className="text-primary/20" />
-                      {new Date(user.createdAt).toLocaleDateString('vi-VN')}
-                    </div>
+                    <p className="text-[11px] font-bold text-primary/30 uppercase tracking-widest mb-2">Địa chỉ hiện tại</p>
+                    {isEditing ? (
+                      <textarea 
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        className="w-full p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary focus:border-cta focus:bg-white outline-none transition-all min-h-[56px] resize-none"
+                        placeholder="Nhập địa chỉ của bạn"
+                        rows={1}
+                      />
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary flex items-start gap-3">
+                        <MapPin size={18} className="text-primary/20 shrink-0 mt-0.5" />
+                        <span>{user.address || 'Chưa cung cấp địa chỉ'}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="group">
-                    <p className="text-[11px] font-bold text-primary/30 uppercase tracking-widest mb-2">Cài đặt bảo mật</p>
-                    <div className="flex flex-col gap-2">
-                      <button className="flex items-center justify-between p-4 rounded-2xl bg-surface border border-primary/5 hover:bg-white hover:border-cta transition-all group/btn">
-                        <span className="text-sm font-bold text-primary/60 group-hover/btn:text-primary">Đổi mật khẩu</span>
-                        <ChevronRight size={16} className="text-primary/20 group-hover/btn:text-cta" />
-                      </button>
-                      <button className="flex items-center justify-between p-4 rounded-2xl bg-surface border border-primary/5 hover:bg-white hover:border-cta transition-all group/btn">
-                        <span className="text-sm font-bold text-primary/60 group-hover/btn:text-primary">Xác thực 2 lớp</span>
-                        <ChevronRight size={16} className="text-primary/20 group-hover/btn:text-cta" />
-                      </button>
+                    <p className="text-[11px] font-bold text-primary/30 uppercase tracking-widest mb-2">Ngày gia nhập</p>
+                    <div className="p-4 rounded-2xl bg-surface border border-primary/5 font-semibold text-primary flex items-center gap-3">
+                      <Calendar size={18} className="text-primary/20" />
+                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'Chưa rõ'}
                     </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 pt-8 border-t border-primary/5">
+                <div className="group">
+                  <p className="text-[11px] font-bold text-primary/30 uppercase tracking-widest mb-2">Cài đặt bảo mật</p>
+                  <div className="flex flex-col gap-2">
+                    <button className="flex items-center justify-between p-4 rounded-2xl bg-surface border border-primary/5 hover:bg-white hover:border-cta transition-all group/btn">
+                      <span className="text-sm font-bold text-primary/60 group-hover/btn:text-primary">Đổi mật khẩu</span>
+                      <ChevronRight size={16} className="text-primary/20 group-hover/btn:text-cta" />
+                    </button>
                   </div>
                 </div>
               </div>

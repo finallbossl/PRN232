@@ -61,6 +61,10 @@ export class AuthService {
           role: user.role,
           phone: user.phone,
           address: user.address,
+          avatarUrl: user.avatarUrl,
+          points: user.points,
+          membershipTier: user.membershipTier,
+          totalTrips: 0,
         },
       };
     } catch (error) {
@@ -112,6 +116,10 @@ export class AuthService {
         role: user.role,
         phone: user.phone,
         address: user.address,
+        avatarUrl: user.avatarUrl,
+        points: user.points,
+        membershipTier: user.membershipTier,
+        totalTrips: await this.prisma.rental.count({ where: { userId: user.id } }),
       },
     };
   }
@@ -137,6 +145,10 @@ export class AuthService {
         role: user.role,
         phone: user.phone,
         address: user.address,
+        avatarUrl: user.avatarUrl,
+        points: user.points,
+        membershipTier: user.membershipTier,
+        totalTrips: await this.prisma.rental.count({ where: { userId: user.id } }),
       },
     };
   }

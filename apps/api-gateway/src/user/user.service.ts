@@ -15,7 +15,12 @@ export class UserService {
         }
 
         const { password, ...result } = user;
-        return { user: result };
+        return { 
+            user: {
+                ...result,
+                totalTrips: await this.prisma.rental.count({ where: { userId: user.id } })
+            } 
+        };
     }
 
     async update(id: string, data: any) {
@@ -25,7 +30,12 @@ export class UserService {
         });
 
         const { password, ...result } = user;
-        return { user: result };
+        return { 
+            user: {
+                ...result,
+                totalTrips: await this.prisma.rental.count({ where: { userId: user.id } })
+            } 
+        };
     }
 
     async delete(id: string) {

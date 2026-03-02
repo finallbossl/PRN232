@@ -86,27 +86,27 @@ export const featuredBikes = [
 export const locations = [
   {
     id: 1,
-    name: 'Hà Nội',
-    count: '1.500+ Xe sẵn sàng',
-    image: 'https://images.unsplash.com/photo-1547432020-008107755a90?auto=format&fit=crop&q=80&w=600',
+    name: 'Trung tâm Quy Nhơn',
+    count: '100+ Xe sẵn sàng',
+    image: 'https://static.vinwonders.com/production/quy-nhon-co-gi-choi-12.jpg',
   },
   {
     id: 2,
-    name: 'TP. Hồ Chí Minh',
-    count: '2.800+ Xe sẵn sàng',
-    image: 'https://images.unsplash.com/photo-1550422998-1e43e7436034?auto=format&fit=crop&q=80&w=600',
+    name: 'Kỳ Co',
+    count: '30+ Xe sẵn sàng',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=600',
   },
   {
     id: 3,
-    name: 'Đà Nẵng',
-    count: '950+ Xe sẵn sàng',
-    image: 'https://images.unsplash.com/photo-1559592442-9e8c47ca629c?auto=format&fit=crop&q=80&w=600',
+    name: 'Eo Gió',
+    count: '30+ Xe sẵn sàng',
+    image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=600',
   },
   {
     id: 4,
-    name: 'Đà Lạt',
-    count: '600+ Xe sẵn sàng',
-    image: 'https://images.unsplash.com/photo-1599389518671-55d8d9b4b45d?auto=format&fit=crop&q=80&w=600',
+    name: 'Ghềnh Ráng',
+    count: '50+ Xe sẵn sàng',
+    image: 'https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&q=80&w=600',
   },
 ];
 

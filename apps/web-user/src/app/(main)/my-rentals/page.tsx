@@ -13,6 +13,7 @@ export default function MyRentalsPage() {
   const { isLoggedIn } = useAuth();
   const router = useRouter();
   const [rentals, setRentals] = useState<any[]>([]);
+  const [totalRentals, setTotalRentals] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // ... rest of useEffect ...
@@ -27,7 +28,8 @@ export default function MyRentalsPage() {
       try {
         const response = await rentalApi.getMyRentals();
         if (response.success && response.data) {
-          setRentals(response.data);
+          setRentals(response.data.rentals || []);
+          setTotalRentals(response.data.total || 0);
         }
       } catch (error) {
         console.error('Failed to fetch rentals:', error);
@@ -82,7 +84,7 @@ export default function MyRentalsPage() {
                  </div>
                  <div>
                     <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest leading-none mb-1">Tổng chuyến đi</p>
-                    <p className="text-xl font-bold text-primary leading-none">12</p>
+                    <p className="text-xl font-bold text-primary leading-none">{totalRentals}</p>
                  </div>
               </div>
               <div className="p-4 rounded-3xl bg-white shadow-soft-xl border border-primary/5 flex items-center gap-4">
@@ -134,9 +136,17 @@ export default function MyRentalsPage() {
 
                   {/* Right side: Information */}
                   <div className="lg:col-span-8 p-10 lg:p-14 flex flex-col justify-between">
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
+                        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
                         <div>
-                          <p className="text-[10px] font-black text-cta uppercase tracking-[0.4em] mb-2">{rental.id.substring(0, 8)}</p>
+                          <div className="flex items-center gap-3 mb-2">
+                            <p className="text-[10px] font-black text-cta uppercase tracking-[0.4em]">{rental.id.substring(0, 8)}</p>
+                            <span className={cn(
+                              "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest",
+                              rental.payments?.status === 'COMPLETED' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                            )}>
+                              {rental.payments?.status === 'COMPLETED' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                            </span>
+                          </div>
                           <h2 className="text-2xl lg:text-3xl font-bold text-primary mb-4 leading-tight group-hover:text-cta transition-colors">{rental.motorbike?.name || 'Xe Máy'}</h2>
                           <div className="flex flex-wrap items-center gap-6">
                               <div className="flex items-center gap-2.5 text-primary/40 group-hover:text-primary transition-colors">
@@ -168,13 +178,23 @@ export default function MyRentalsPage() {
                           </div>
                           <p className="text-[10px] font-bold text-primary/40 italic">Đội ngũ hỗ trợ 24/7 đang túc trực</p>
                         </div>
-                        <Link 
-                          href={`/my-rentals/${rental.id}`}
-                          className="luxury-btn-primary py-3.5 px-8 flex items-center gap-3 text-[10px] font-black tracking-widest"
-                        >
-                          CHI TIẾT HÀNH TRÌNH
-                          <ChevronRight size={16} />
-                        </Link>
+                        <div className="flex gap-3">
+                          {rental.payments?.status !== 'COMPLETED' && rental.status !== RentalStatus.CANCELLED && (
+                            <Link 
+                              href={`/my-rentals/${rental.id}`}
+                              className="bg-cta/10 text-cta hover:bg-cta hover:text-white transition-all py-3.5 px-6 rounded-2xl text-[10px] font-black tracking-widest flex items-center gap-2"
+                            >
+                              <CreditCard size={14} /> THANH TOÁN
+                            </Link>
+                          )}
+                          <Link 
+                            href={`/my-rentals/${rental.id}`}
+                            className="luxury-btn-primary py-3.5 px-8 flex items-center gap-3 text-[10px] font-black tracking-widest"
+                          >
+                            CHI TIẾT
+                            <ChevronRight size={16} />
+                          </Link>
+                        </div>
                     </div>
                   </div>
                 </div>

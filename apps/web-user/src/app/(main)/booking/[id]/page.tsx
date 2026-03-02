@@ -11,7 +11,7 @@ import {
   Heart, Share2, MessageSquare, ChevronRight, 
   ArrowLeft, User, Phone, FileText, Upload, 
   CreditCard, CheckCircle2, X, AlertCircle, Camera,
-  ChevronDown, Loader2
+  ChevronDown, Loader2, LocateFixed
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -86,11 +86,37 @@ function BookingContent() {
     fullName: authUser?.name || '',
     phone: '',
     documentImage: null as string | null,
-    paymentMethod: 'deposit'
+    pickupLocation: 'Quy Nhơn Coastal Hub',
+    customPickupLocation: '',
+    returnLocation: 'Quy Nhơn Coastal Hub',
+    customReturnLocation: '',
+    notes: '',
+    paymentMethod: 'sepay' // Default to SePay
   });
 
   const [isSuccess, setIsSuccess] = useState(false);
+  const [createdRental, setCreatedRental] = useState<any>(null);
+  const [paymentStatus, setPaymentStatus] = useState<string>('PENDING');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Polling for payment status
+  useEffect(() => {
+    let interval: any;
+    if (isSuccess && createdRental && bookingData.paymentMethod === 'sepay' && paymentStatus !== 'COMPLETED') {
+      interval = setInterval(async () => {
+        try {
+          const response = await rentalApi.getById(createdRental.id);
+          if (response.success && response.data.status === 'CONFIRMED') {
+            setPaymentStatus('COMPLETED');
+            clearInterval(interval);
+          }
+        } catch (error) {
+          console.error('Polling error:', error);
+        }
+      }, 5000); // Poll every 5 seconds
+    }
+    return () => clearInterval(interval);
+  }, [isSuccess, createdRental, bookingData.paymentMethod, paymentStatus]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,25 +129,47 @@ function BookingContent() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // You could add a toast here if you have one
+  };
+
   const handleSubmit = async () => {
     if (!bike || !authUser) return;
     
+    if (!bookingData.phone || bookingData.phone.length < 10) {
+      setError('Vui lòng nhập số điện thoại liên hệ hợp lệ.');
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
+      const getFinalLocation = (type: 'pickup' | 'return') => {
+        if (type === 'pickup') {
+          return bookingData.pickupLocation === 'Giao xe tận nơi' 
+            ? `Giao tận nơi: ${bookingData.customPickupLocation}` 
+            : bookingData.pickupLocation;
+        }
+        return bookingData.returnLocation === 'Trả xe tại điểm hẹn' 
+          ? `Trả tại điểm hẹn: ${bookingData.customReturnLocation}` 
+          : bookingData.returnLocation;
+      };
+
       const rentalDto: CreateRentalDto = {
         motorbikeId: bike.id,
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
-        pickupLocation: 'Văn phòng trung tâm', // Simplified for now
-        returnLocation: 'Văn phòng trung tâm',
-        notes: `Payment method: ${bookingData.paymentMethod}`,
+        pickupLocation: getFinalLocation('pickup'),
+        returnLocation: getFinalLocation('return'),
+        notes: `SĐT liên hệ: ${bookingData.phone} | Phương thức: ${bookingData.paymentMethod}${bookingData.notes ? ` | Ghi chú: ${bookingData.notes}` : ''}`,
         totalPrice: totalPriceRaw,
         numberOfDays: days
       };
 
       const response = await rentalApi.create(rentalDto);
       if (response.success) {
+        setCreatedRental(response.data);
         setIsSuccess(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -135,68 +183,116 @@ function BookingContent() {
     }
   };
 
-  if (isSuccess) {
+  if (isSuccess && createdRental) {
+    const qrUrl = `/QR_Code.png`;
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#FAF9F6] px-4 py-10 md:py-20">
+    <main className="min-h-screen w-screen flex flex-col items-center justify-center bg-[#FAF9F6] px-4 py-10 md:py-20 overflow-x-hidden">
       
-      <div className="w-full max-w-md bg-white rounded-[32px] md:rounded-[48px] shadow-soft-lg border border-primary/5 p-5 md:p-14 text-center space-y-8 animate-in zoom-in-50 duration-700">
+      <div className="w-full max-w-[640px] bg-white rounded-[40px] md:rounded-[60px] shadow-luxury-2xl border border-primary/5 p-8 md:p-16 text-center space-y-10 relative z-10 mx-auto">
 
         {/* ICON SUCCESS */}
-        <div className="relative mx-auto w-24 h-24 md:w-36 md:h-36">
-          <div className="absolute inset-0 rounded-[28px] bg-emerald-500/10 animate-ping" />
-          <div className="absolute inset-2 rounded-[24px] bg-emerald-500/20 animate-pulse" />
-
-          <div className="relative w-full h-full rounded-[28px] md:rounded-[32px] bg-emerald-500 flex items-center justify-center text-white shadow-lg animate-bounce">
-            <CheckCircle2 size={44} className="md:w-[56px] md:h-[56px]" strokeWidth={2.5} />
+        <div className="relative mx-auto w-20 h-20 md:w-28 md:h-28">
+          <div className="absolute inset-0 rounded-[28px] bg-emerald-500/10 animate-pulse" />
+          <div className="relative w-full h-full rounded-[28px] md:rounded-[32px] bg-emerald-500 flex items-center justify-center text-white shadow-lg">
+            <CheckCircle2 size={32} strokeWidth={2.5} />
           </div>
         </div>
 
         {/* TEXT CONTENT */}
-        <div className="space-y-4">
-
-          <h3 className="text-[15px] md:text-3xl font-black text-primary leading-tight tracking-tight">
-            Hành trình sẵn sàng!
+        <div className="space-y-4 px-2 block w-full">
+          <h3 className="text-3xl md:text-5xl font-black text-primary leading-[1.2] tracking-tight text-center w-full block">
+            {paymentStatus === 'COMPLETED' ? 'Thanh toán thành công!' : 'Hành trình sẵn sàng!'}
           </h3>
+          <div className="flex flex-col items-center gap-4 w-full">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[10px] md:text-xs text-primary/30 font-black uppercase tracking-[0.3em]">Mã đặt chỗ</span>
+              <span className="text-sm md:text-base text-cta font-bold tracking-widest bg-cta/5 px-6 py-2 rounded-full border border-cta/10 italic">
+                #{createdRental.id.substring(0, 8).toUpperCase()}
+              </span>
+            </div>
+            
+            <div className="flex flex-wrap items-center justify-center gap-6 py-4 border-y border-primary/5 w-full max-w-sm">
+                <div className="flex flex-col items-center gap-1">
+                   <span className="text-[9px] font-black text-primary/20 uppercase tracking-widest">Nhận xe</span>
+                   <span className="text-[11px] font-bold text-primary max-w-[140px] truncate">
+                    {bookingData.pickupLocation === 'Giao xe tận nơi' ? (bookingData.customPickupLocation || 'Giao tận nơi') : bookingData.pickupLocation}
+                   </span>
+                </div>
+                <div className="h-8 w-px bg-primary/5 hidden sm:block" />
+                <div className="flex flex-col items-center gap-1">
+                   <span className="text-[9px] font-black text-primary/20 uppercase tracking-widest">Trả xe</span>
+                   <span className="text-[11px] font-bold text-primary max-w-[140px] truncate">
+                    {bookingData.returnLocation === 'Trả xe tại điểm hẹn' ? (bookingData.customReturnLocation || 'Trả tại điểm hẹn') : bookingData.returnLocation}
+                   </span>
+                </div>
+            </div>
+          </div>
+        </div>
 
-          <div className="space-y-2">
-            <p className="text-[10px] md:text-xs text-primary/40 italic font-medium">
-              Mã đặt chỗ của bạn
-            </p>
+        {bookingData.paymentMethod === 'sepay' && paymentStatus !== 'COMPLETED' && (
+          <div className="bg-[#FAF9F6] rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 border border-cta/10 space-y-8 shadow-luxury-sm w-full block">
+            <div className="flex flex-col items-center gap-6 w-full">
+              <div className="space-y-3 w-full">
+                 <p className="text-[10px] font-black text-cta/40 uppercase tracking-[0.4em]">VietQR</p>
+                 <div className="bg-white p-6 rounded-[2rem] shadow-luxury-md border border-cta/5 inline-block">
+                    <img src={qrUrl} alt="VietQR" className="w-48 h-48 md:w-64 md:h-64 object-contain mx-auto" />
+                 </div>
+              </div>
+              <div className="text-center space-y-6 w-full block">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-cta uppercase tracking-[0.2em]">Quét mã để thanh toán tự động</p>
+                  <p className="text-3xl md:text-5xl font-bold text-primary tracking-tighter italic">
+                    {Number(createdRental.totalPrice).toLocaleString('vi-VN')} <span className="text-lg">VNĐ</span>
+                  </p>
+                </div>
 
-            {/* BOOKING CODE */}
-            <div className="flex justify-center">
-              <div className="bg-primary text-white px-5 md:px-8 py-2 md:py-3 rounded-full font-black tracking-[0.2em] text-[11px] md:text-lg whitespace-nowrap shadow-luxury-sm">
-                #{id.substring(0, 4).toUpperCase()}
+                <div className="grid gap-4 w-full max-w-sm mx-auto">
+                   <div className="bg-white p-4 rounded-2xl border border-primary/5 shadow-soft-sm flex items-center justify-between group hover:border-cta/20 transition-all">
+                      <div className="text-left">
+                         <p className="text-[8px] font-black text-primary/30 uppercase tracking-widest mb-1">Nội dung chuyển khoản</p>
+                         <p className="text-xs font-bold text-primary tracking-wider">{createdRental.id}</p>
+                      </div>
+                      <button 
+                        onClick={() => copyToClipboard(createdRental.id)}
+                        className="h-10 w-10 rounded-xl bg-cta/5 text-cta flex items-center justify-center hover:bg-cta hover:text-white transition-all shadow-soft-sm"
+                      >
+                         <FileText size={16} />
+                      </button>
+                   </div>
+                   
+                   <div className="bg-white p-4 rounded-2xl border border-primary/5 shadow-soft-sm text-left">
+                      <p className="text-[8px] font-black text-primary/30 uppercase tracking-widest mb-1">Thông tin hưởng thụ</p>
+                      <p className="text-xs font-bold text-primary">MB Bank - GORIDE ELITE</p>
+                      <p className="text-xs font-medium text-primary/60">0393273111</p>
+                   </div>
+                </div>
+
+                <div className="max-w-[320px] mx-auto bg-cta/5 p-4 rounded-2xl border border-cta/10">
+                  <p className="text-[10px] md:text-[11px] text-cta font-bold leading-relaxed italic block">
+                    QUAN TRỌNG: Vui lòng giữ nguyên nội dung chuyển khoản để hệ thống tự động xác nhận trong 1-3 phút.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-
-          <p className="text-[10px] md:text-xs text-primary/30 max-w-[220px] md:max-w-xs mx-auto leading-relaxed pt-1 italic">
-            Thông tin chi tiết đã được gửi qua email. Chúng tôi sẽ liên hệ sớm nhất.
-          </p>
-
-        </div>
+        )}
 
         {/* ACTION BUTTONS */}
-        <div className="grid gap-2.5 md:grid-cols-2 pt-2">
-
+        <div className="flex flex-col sm:flex-row gap-4 pt-8 w-full">
           <Link
             href="/my-rentals"
-            className="h-11 md:h-14 flex items-center justify-center gap-2 rounded-xl bg-primary text-white text-[10px] md:text-xs font-bold uppercase tracking-wider hover:bg-cta transition shadow-soft-md px-4"
+            className="flex-1 h-16 md:h-20 flex items-center justify-center gap-3 rounded-2xl md:rounded-3xl bg-primary text-white text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-cta transition shadow-luxury-lg px-8 no-wrap"
           >
-            <span className="truncate">Xem hành trình</span>
-            <ChevronRight size={14} className="flex-shrink-0" />
+            XEM HÀNH TRÌNH <ChevronRight size={16} />
           </Link>
-
           <Link
-            href="/cars"
-            className="h-11 md:h-14 flex items-center justify-center rounded-xl border border-primary/10 text-primary text-[10px] md:text-xs font-bold uppercase tracking-wider hover:border-cta hover:text-cta transition px-4"
+            href="/"
+            className="flex-1 h-16 md:h-20 flex items-center justify-center rounded-2xl md:rounded-3xl border border-primary/10 text-primary text-[10px] md:text-xs font-black uppercase tracking-widest hover:border-cta hover:text-cta transition px-8 no-wrap"
           >
-            Về trang chủ
+            VỀ TRANG CHỦ
           </Link>
-
         </div>
-
       </div>
     </main>
   );
@@ -249,7 +345,7 @@ function BookingContent() {
 
                <div className="grid md:grid-cols-2 gap-8">
                   <div className="relative group">
-                     <label className="absolute left-8 top-4 text-[9px] font-black text-primary/30 uppercase tracking-[0.2em] z-10">Họ và Tên</label>
+                     <label className="absolute left-8 top-4 text-[9px] font-black text-primary/30 uppercase tracking-[0.2em] z-10 pointer-events-none">Họ và Tên</label>
                      <div className="flex items-center gap-4 h-20 pl-8 pr-6 rounded-[1.5rem] bg-[#FAF9F6] border border-primary/5 focus-within:border-cta/20 focus-within:ring-4 focus-within:ring-cta/5 transition-all shadow-inner-sm">
                         <User size={20} className="text-primary/10 group-focus-within:text-cta transition-colors" />
                         <input 
@@ -260,11 +356,12 @@ function BookingContent() {
                      </div>
                   </div>
                   <div className="relative group">
-                     <label className="absolute left-8 top-4 text-[9px] font-black text-primary/30 uppercase tracking-[0.2em] z-10">Số điện thoại</label>
+                     <label className="absolute left-8 top-4 text-[9px] font-black text-primary/30 uppercase tracking-[0.2em] z-10 pointer-events-none">Số điện thoại</label>
                      <div className="flex items-center gap-4 h-20 pl-8 pr-6 rounded-[1.5rem] bg-[#FAF9F6] border border-primary/5 focus-within:border-cta/20 focus-within:ring-4 focus-within:ring-cta/5 transition-all shadow-inner-sm">
                         <Phone size={20} className="text-primary/10 group-focus-within:text-cta transition-colors" />
                         <input 
                           placeholder="0xxx xxx xxx" 
+                          value={bookingData.phone}
                           onChange={(e) => setBookingData({...bookingData, phone: e.target.value})} 
                           className="bg-transparent w-full outline-none font-bold text-primary text-base h-full pt-4" 
                         />
@@ -315,7 +412,102 @@ function BookingContent() {
                </div>
             </section>
 
-            {/* Section 2: Payment Options */}
+            {/* Section 2: Itinerary & Special Requests */}
+            <section className="bg-white p-10 md:p-14 rounded-[3.5rem] border border-primary/5 shadow-luxury-lg space-y-10">
+               <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-cta/10 flex items-center justify-center text-cta shadow-soft-sm">
+                    <MapPin size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-primary">Hành trình & Yêu cầu</h3>
+                    <p className="text-xs text-primary/30 font-medium italic">Tùy chỉnh điểm giao nhận và yêu cầu đặc biệt.</p>
+                  </div>
+               </div>
+
+               <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                     <div className="relative group">
+                        <label className="absolute left-8 top-4 text-[9px] font-black text-primary/30 uppercase tracking-[0.2em] z-10 pointer-events-none">Điểm nhận xe</label>
+                        <div className="flex items-center gap-4 h-20 pl-8 pr-6 rounded-[1.5rem] bg-[#FAF9F6] border border-primary/5 focus-within:border-cta/20 focus-within:ring-4 focus-within:ring-cta/5 transition-all shadow-inner-sm relative">
+                           <MapPin size={20} className="text-primary/10 group-focus-within:text-cta transition-colors" />
+                           <select 
+                             value={bookingData.pickupLocation}
+                             onChange={(e) => setBookingData({...bookingData, pickupLocation: e.target.value})}
+                             className="bg-transparent w-full outline-none font-bold text-primary text-base h-full pt-4 appearance-none cursor-pointer"
+                           >
+                              <option value="Quy Nhơn Coastal Hub">Quy Nhơn Coastal Hub</option>
+                              <option value="Kỳ Co – Eo Gió Retreat">Kỳ Co – Eo Gió Retreat</option>
+                              <option value="Giao xe tận nơi">Giao xe tận nơi (Liên hệ)</option>
+                           </select>
+                           <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/20 pointer-events-none mt-2" />
+                        </div>
+                     </div>
+                     {bookingData.pickupLocation === 'Giao xe tận nơi' && (
+                        <div className="relative group animate-in slide-in-from-top-2 duration-300">
+                           <label className="absolute left-8 top-4 text-[9px] font-black text-cta/40 uppercase tracking-[0.2em] z-10 pointer-events-none">Địa chỉ nhận xe cụ thể</label>
+                           <div className="flex items-center gap-4 h-20 pl-8 pr-6 rounded-[1.5rem] bg-cta/5 border border-cta/10 focus-within:border-cta/30 focus-within:ring-4 focus-within:ring-cta/5 transition-all">
+                              <LocateFixed size={20} className="text-cta/30 group-focus-within:text-cta transition-colors" />
+                              <input 
+                                placeholder="Nhập địa chỉ nhà, khách sạn..."
+                                value={bookingData.customPickupLocation}
+                                onChange={(e) => setBookingData({...bookingData, customPickupLocation: e.target.value})}
+                                className="bg-transparent w-full outline-none font-bold text-primary text-base h-full pt-4"
+                              />
+                           </div>
+                        </div>
+                     )}
+                  </div>
+
+                  <div className="space-y-4">
+                     <div className="relative group">
+                        <label className="absolute left-8 top-4 text-[9px] font-black text-primary/30 uppercase tracking-[0.2em] z-10 pointer-events-none">Điểm trả xe</label>
+                        <div className="flex items-center gap-4 h-20 pl-8 pr-6 rounded-[1.5rem] bg-[#FAF9F6] border border-primary/5 focus-within:border-cta/20 focus-within:ring-4 focus-within:ring-cta/5 transition-all shadow-inner-sm relative">
+                           <MapPin size={20} className="text-primary/10 group-focus-within:text-cta transition-colors" />
+                           <select 
+                             value={bookingData.returnLocation}
+                             onChange={(e) => setBookingData({...bookingData, returnLocation: e.target.value})}
+                             className="bg-transparent w-full outline-none font-bold text-primary text-base h-full pt-4 appearance-none cursor-pointer"
+                           >
+                              <option value="Quy Nhơn Coastal Hub">Quy Nhơn Coastal Hub</option>
+                              <option value="Kỳ Co – Eo Gió Retreat">Kỳ Co – Eo Gió Retreat</option>
+                              <option value="Trả xe tại điểm hẹn">Trả xe tại điểm hẹn (Liên hệ)</option>
+                           </select>
+                           <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/20 pointer-events-none mt-2" />
+                        </div>
+                     </div>
+                     {bookingData.returnLocation === 'Trả xe tại điểm hẹn' && (
+                        <div className="relative group animate-in slide-in-from-top-2 duration-300">
+                           <label className="absolute left-8 top-4 text-[9px] font-black text-cta/40 uppercase tracking-[0.2em] z-10 pointer-events-none">Địa chỉ trả xe cụ thể</label>
+                           <div className="flex items-center gap-4 h-20 pl-8 pr-6 rounded-[1.5rem] bg-cta/5 border border-cta/10 focus-within:border-cta/30 focus-within:ring-4 focus-within:ring-cta/5 transition-all">
+                              <LocateFixed size={20} className="text-cta/30 group-focus-within:text-cta transition-colors" />
+                              <input 
+                                placeholder="Nhập địa chỉ trả xe..."
+                                value={bookingData.customReturnLocation}
+                                onChange={(e) => setBookingData({...bookingData, customReturnLocation: e.target.value})}
+                                className="bg-transparent w-full outline-none font-bold text-primary text-base h-full pt-4"
+                              />
+                           </div>
+                        </div>
+                     )}
+                  </div>
+               </div>
+
+               <div className="relative group">
+                  <label className="absolute left-8 top-4 text-[9px] font-black text-primary/30 uppercase tracking-[0.2em] z-10 pointer-events-none">Ghi chú & Yêu cầu đặc biệt</label>
+                  <div className="flex items-start gap-4 min-h-32 pl-8 pr-6 py-6 rounded-[1.5rem] bg-[#FAF9F6] border border-primary/5 focus-within:border-cta/20 focus-within:ring-4 focus-within:ring-cta/5 transition-all shadow-inner-sm">
+                     <FileText size={20} className="text-primary/10 group-focus-within:text-cta transition-colors mt-4" />
+                     <textarea 
+                        placeholder="Ví dụ: Trang bị nón bảo hiểm Elite Gold, giao xe đúng 8 giờ sáng..."
+                        value={bookingData.notes}
+                        onChange={(e) => setBookingData({...bookingData, notes: e.target.value})}
+                        className="bg-transparent w-full outline-none font-bold text-primary text-base h-full pt-4 resize-none"
+                        rows={3}
+                     />
+                  </div>
+               </div>
+            </section>
+
+            {/* Section 3: Payment Options */}
             <section className="bg-white p-10 md:p-14 rounded-[3.5rem] border border-primary/5 shadow-luxury-lg space-y-10">
                <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-soft-sm">
@@ -327,8 +519,9 @@ function BookingContent() {
                   </div>
                </div>
 
-               <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-6">
                   {[
+                    { id: 'sepay', label: 'Chuyển khoản SePay', price: 'Tự động xác nhận', desc: 'Thanh toán qua QR ngân hàng, hệ thống tự động xác nhận sau 1-3 phút.', icon: <CheckCircle2 size={18}/> },
                     { id: 'deposit', label: 'Đặt cọc Elite Hub', price: (200000).toLocaleString('vi-VN') + " VNĐ", desc: 'Chỉ cọc phí giữ xe, thanh toán còn lại khi nhận xe.', icon: <CheckCircle2 size={18}/> },
                     { id: 'full', label: 'Thanh toán trọn gói', price: (totalPriceRaw * 0.95).toLocaleString('vi-VN') + " VNĐ", desc: 'Ưu đãi Elite giảm 5% khi thanh toán Online 100%.', icon: <Star size={18}/> }
                   ].map((method) => (

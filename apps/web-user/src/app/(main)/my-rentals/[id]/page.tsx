@@ -33,6 +33,10 @@ export default function RentalDetailPage() {
   const [rental, setRental] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
   useEffect(() => {
     if (!isLoggedIn) {
       router.push('/login');
@@ -71,6 +75,7 @@ export default function RentalDetailPage() {
       case RentalStatus.ONGOING: return "bg-cta text-white";
       case RentalStatus.COMPLETED: return "bg-emerald-500 text-white";
       case RentalStatus.CANCELLED: return "bg-red-500 text-white";
+      case RentalStatus.PENDING: return "bg-amber-500 text-white";
       default: return "bg-white text-primary border border-primary/5";
     }
   };
@@ -202,14 +207,57 @@ export default function RentalDetailPage() {
             {/* Payment Summary */}
             <div className="glass-card bg-white p-10 rounded-[3rem] border border-primary/5 shadow-luxury-lg">
               <h3 className="text-lg font-black text-primary uppercase tracking-widest mb-8">Bản kê chi phí</h3>
+              
+              {rental.payments?.status !== 'COMPLETED' && rental.status !== RentalStatus.CANCELLED && (
+                <div className="mb-8 p-6 bg-[#FAF9F6] rounded-3xl border border-cta/10 flex flex-col items-center gap-6 text-center shadow-inner-sm">
+                   <div className="bg-white p-3 rounded-2xl shadow-soft-sm border border-cta/5">
+                     <img 
+                       src="/QR_Code.png" 
+                       alt="VietQR" 
+                       className="w-44 h-44 object-contain mx-auto" 
+                     />
+                   </div>
+                   
+                   <div className="w-full space-y-3">
+                      <div className="bg-white p-3 rounded-xl border border-primary/5 flex items-center justify-between group transition-all hover:border-cta/20">
+                         <div className="text-left">
+                            <p className="text-[7px] font-black text-primary/30 uppercase tracking-widest mb-0.5">Nội dung chuyển khoản</p>
+                            <p className="text-[10px] font-bold text-primary truncate max-w-[120px]">{rental.id}</p>
+                         </div>
+                         <button 
+                           onClick={() => copyToClipboard(rental.id)}
+                           className="h-8 w-8 rounded-lg bg-cta/5 text-cta flex items-center justify-center hover:bg-cta hover:text-white transition-all shadow-soft-sm"
+                         >
+                            <FileText size={14} />
+                         </button>
+                      </div>
+
+                      <div className="bg-white p-3 rounded-xl border border-primary/5 text-left">
+                         <p className="text-[7px] font-black text-primary/30 uppercase tracking-widest mb-0.5">Tài khoản thụ hưởng</p>
+                         <p className="text-[10px] font-bold text-primary">MB Bank - 0393273111</p>
+                         <p className="text-[10px] font-medium text-primary/60 uppercase tracking-tighter">GORIDE ELITE</p>
+                      </div>
+
+                      <div className="bg-cta/5 p-3 rounded-xl border border-cta/10">
+                        <p className="text-[9px] text-cta font-bold leading-tight italic">
+                          Hệ thống sẽ tự động xác nhận sau 1-3 phút khi nhận tiền.
+                        </p>
+                      </div>
+                   </div>
+                </div>
+              )}
+
               <div className="flex justify-between items-end mb-8 pt-4 border-t border-primary/5">
                  <div>
                     <h4 className="text-[10px] font-black text-primary/30 uppercase tracking-[0.3em] mb-1">Tổng cộng</h4>
-                    <p className="text-2xl font-bold text-cta">{rental.totalPrice.toLocaleString('vi-VN')} VNĐ</p>
+                    <p className="text-2xl font-bold text-cta">{Number(rental.totalPrice).toLocaleString('vi-VN')} VNĐ</p>
                  </div>
                  <div className="text-right">
-                    <div className="flex items-center gap-2 text-emerald-500 font-black text-[9px] uppercase tracking-widest">
-                       <CreditCard size={12} /> Đã xác nhận
+                    <div className={cn(
+                      "flex items-center gap-2 font-black text-[9px] uppercase tracking-widest",
+                      rental.payments?.status === 'COMPLETED' ? "text-emerald-500" : "text-amber-500"
+                    )}>
+                       <CreditCard size={12} /> {rental.payments?.status === 'COMPLETED' ? 'Đã xác nhận' : 'Chờ thanh toán'}
                     </div>
                  </div>
               </div>

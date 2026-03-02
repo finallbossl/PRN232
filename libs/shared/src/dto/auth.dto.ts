@@ -75,6 +75,10 @@ export interface AuthResponse {
         role: string;
         phone?: string;
         address?: string;
+        avatarUrl?: string;
+        points: number;
+        membershipTier: string;
+        totalTrips: number;
     };
 }
 

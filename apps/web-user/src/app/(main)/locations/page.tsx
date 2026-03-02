@@ -17,36 +17,36 @@ const MapComponent = dynamic(() => import('./MapComponent'), {
 
 const LOCATIONS = [
   {
-    id: 'da-nang',
-    name: 'Đà Nẵng Hub',
-    desc: 'Bãi biển Mỹ Khê và Bán đảo Sơn Trà tuyệt đẹp, cung đường biển quyễn rũ bậc nhất Việt Nam.',
-    image: 'https://images.unsplash.com/photo-1559592443-7f8776096d61?auto=format&fit=crop&q=80&w=800',
-    bikes: 120,
+    id: 'quy-nhon-center',
+    name: 'Quy Nhơn Coastal Hub',
+    desc: 'Thành phố biển trong xanh với cung đường ven biển tuyệt đẹp và bãi cát vàng trải dài.',
+    image: 'https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&q=80&w=800',
+    bikes: 140,
     rating: '5.0',
-    address: 'Elite Hub #1: 123 Võ Nguyên Giáp, Sơn Trà'
+    address: 'Elite Hub #1: 01 Nguyễn Tất Thành, Quy Nhơn'
   },
   {
-    id: 'da-lat',
-    name: 'Đà Lạt Retreat',
-    desc: 'Thành phố sương mù với những cung đường uốn lượn qua rừng thông đại ngàn và thung lũng bí ẩn.',
-    image: 'https://images.unsplash.com/photo-1597250831267-42926c7a26f0?auto=format&fit=crop&q=80&w=800',
-    bikes: 85,
+    id: 'ky-co-eo-gio',
+    name: 'Kỳ Co – Eo Gió Retreat',
+    desc: 'Thiên đường biển hoang sơ với làn nước xanh ngọc và những vách đá hùng vĩ.',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800',
+    bikes: 90,
     rating: '4.9',
-    address: 'Elite Hub #2: 45 Phan Bội Châu, Đà Lạt'
+    address: 'Elite Hub #2: Nhơn Lý, Quy Nhơn'
   }
 ];
 
 const STORIES = [
   {
-    title: "Cung Đường Ven Biển",
-    desc: "Khám phá bán đảo Sơn Trà – nơi được mệnh danh là lá phổi xanh của thành phố biển Đà Nẵng.",
-    image: "https://images.unsplash.com/photo-1559592443-7f8776096d61?auto=format&fit=crop&q=80&w=800",
+    title: "Cung Đường Ven Biển Quy Nhơn",
+    desc: "Trải nghiệm cung đường ven biển nối trung tâm thành phố với Nhơn Lý – một trong những cung đường đẹp nhất miền Trung.",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800",
     icon: Wind
   },
   {
-    title: "Chinh Phục Hải Vân",
-    desc: "Trải nghiệm đèo Hải Vân – 'Thiên hạ đệ nhất hùng quan' – bằng xe máy là nghi thức bứt phá của các Elite Traveler.",
-    image: "https://images.unsplash.com/photo-1596402184320-417d7178b2cd?auto=format&fit=crop&q=80&w=800",
+    title: "Khám Phá Eo Gió",
+    desc: "Đón bình minh tại Eo Gió với những vách đá uốn cong ôm trọn đại dương xanh thẳm.",
+    image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=800",
     icon: Mountain
   }
 ];
